@@ -241,7 +241,7 @@ export class AiClient {
       method: opts.method,
       ok: !failure,
       latencyMs: Date.now() - started,
-      ...(failure ?? {}),
+      ...failure,
     });
     if (!failure) this.logger.log(entry);
     else if (failure.type === 'http' && failure.status >= 500)
