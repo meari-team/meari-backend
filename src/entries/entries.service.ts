@@ -7,13 +7,16 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PhotoStorage } from '../storage/photo-storage.js';
 import type {
   EntryDto,
+  EntryFeedDto,
   EntrySummaryDto,
   UpsertEntryDto,
 } from './entries.dto.js';
 import {
   entryDetailInclude,
+  entryFeedInclude,
   entrySummaryInclude,
   toEntryDto,
+  toEntryFeedItemDto,
   toEntrySummaryDto,
 } from './entry.mapper.js';
 
@@ -44,6 +47,31 @@ export class EntriesService {
       include: entrySummaryInclude,
     });
     return Promise.all(entries.map((e) => toEntrySummaryDto(e, this.storage)));
+  }
+
+  // 전체 일기 목록(날짜 내림차순). before 미만만, limit+1개를 읽어 다음 페이지 여부를 안다
+  async feed(
+    userId: string,
+    before: string | undefined,
+    limit: number,
+  ): Promise<EntryFeedDto> {
+    const rows = await this.prisma.entry.findMany({
+      where: {
+        userId,
+        ...(before ? { entryDate: { lt: toDbDate(before) } } : {}),
+      },
+      orderBy: { entryDate: 'desc' },
+      take: limit + 1,
+      include: entryFeedInclude,
+    });
+    const page = rows.slice(0, limit);
+    const items = await Promise.all(
+      page.map((e) => toEntryFeedItemDto(e, this.storage)),
+    );
+    return {
+      items,
+      nextBefore: rows.length > limit ? items[items.length - 1].date : null,
+    };
   }
 
   // 남의 일기와 없는 일기를 구분하지 않는다 (둘 다 404).
