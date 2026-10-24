@@ -1,10 +1,5 @@
-import { applyDecorators, Header, HttpStatus } from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiProperty,
-  ApiResponse,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { applyDecorators, HttpStatus } from '@nestjs/common';
+import { ApiProperty, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { ERROR_CODES, type ErrorCode } from '../errors/app.exception.js';
 
 class ErrorBodyDto {
@@ -33,16 +28,5 @@ export function ApiErrors(errors: Partial<Record<HttpStatus, ErrorCode[]>>) {
         schema: { $ref: getSchemaPath(ErrorResponseDto) },
       }),
     ),
-  );
-}
-
-// 아직 실제 구현이 없는 엔드포인트. 고정된 목 응답을 돌려주며 응답 헤더로 표시한다.
-export function ApiStub(summary: string, ticket: string) {
-  return applyDecorators(
-    ApiOperation({
-      summary: `${summary} [STUB]`,
-      description: `목 응답을 돌려준다. ${ticket}에서 실제 구현으로 교체한다. 응답 헤더 \`X-Meari-Stub: true\``,
-    }),
-    Header('X-Meari-Stub', 'true'),
   );
 }

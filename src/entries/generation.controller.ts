@@ -20,8 +20,7 @@ import {
 } from '../common/decorators/current-user.decorator.js';
 import { GenerationService } from '../generation/generation.service.js';
 import { ParseDatePipe } from '../common/pipes/parse-date.pipe.js';
-import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
-import { stubEntry } from '../stubs/fixtures.js';
+import { ApiErrors } from '../common/swagger/api-docs.js';
 import {
   AnalyzeResultDto,
   AnswersDto,
@@ -122,18 +121,19 @@ export class GenerationController {
   }
 
   @Patch('memory')
-  @ApiStub('기억에서 제외/복원 (G5, P1)', 'MEA-23')
+  @ApiOperation({
+    summary: '기억에서 제외/복원 (G5)',
+    description:
+      '확정된 일기만. excluded=true: AI 기억을 먼저 지우고 성공하면 제외(실패 시 503, 그대로). ' +
+      'excluded=false: PENDING으로 바꾸고 뒤에서 다시 색인.',
+  })
   @ApiOkResponse({ type: EntryDto })
-  @ApiErrors({ 503: ['AI_INDEX_UNAVAILABLE'] })
+  @ApiErrors({ 409: ['INVALID_ENTRY_STATE'], 503: ['AI_INDEX_UNAVAILABLE'] })
   updateMemory(
+    @CurrentUser() user: AuthUser,
     @Param('date', ParseDatePipe) date: string,
     @Body() dto: UpdateMemoryDto,
-  ): EntryDto {
-    return {
-      ...stubEntry(date),
-      status: 'CONFIRMED',
-      excludedFromMemory: dto.excluded,
-      aiIndexStatus: dto.excluded ? 'NONE' : 'PENDING',
-    };
+  ): Promise<EntryDto> {
+    return this.generation.setMemory(user.id, date, dto);
   }
 }

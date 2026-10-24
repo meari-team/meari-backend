@@ -4,7 +4,7 @@ import { AppException } from '../common/errors/app.exception.js';
 import { MemorySyncService } from '../memory-sync/memory-sync.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PhotoStorage } from '../storage/photo-storage.js';
-import { toUserDto, type UserDto } from './user.dto.js';
+import { toUserDto, type UpdateMeDto, type UserDto } from './user.dto.js';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +26,18 @@ export class UsersService {
         '로그인이 필요해요.',
       );
     }
+    return toUserDto(user);
+  }
+
+  // U2: 보낸 필드만 바꾼다
+  async update(userId: string, dto: UpdateMeDto): Promise<UserDto> {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.nickname !== undefined ? { nickname: dto.nickname } : {}),
+        ...(dto.diaryStyle !== undefined ? { diaryStyle: dto.diaryStyle } : {}),
+      },
+    });
     return toUserDto(user);
   }
 

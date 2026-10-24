@@ -12,7 +12,7 @@ import {
   CurrentUser,
   type AuthUser,
 } from '../common/decorators/current-user.decorator.js';
-import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
+import { ApiErrors } from '../common/swagger/api-docs.js';
 import { UsersService } from './users.service.js';
 import { UpdateMeDto, UserDto } from './user.dto.js';
 
@@ -30,15 +30,14 @@ export class UsersController {
   }
 
   @Patch()
-  @ApiStub('닉네임·문체 변경 (U2, P1)', 'MEA-후속')
+  @ApiOperation({ summary: '닉네임·문체 변경 (U2) — 보낸 필드만 바꾼다' })
   @ApiOkResponse({ type: UserDto })
   @ApiErrors({ 400: ['VALIDATION_FAILED'] })
-  async updateMe(
+  updateMe(
     @CurrentUser() authUser: AuthUser,
     @Body() dto: UpdateMeDto,
   ): Promise<UserDto> {
-    const user = await this.me(authUser);
-    return { ...user, ...dto };
+    return this.users.update(authUser.id, dto);
   }
 
   @Delete()

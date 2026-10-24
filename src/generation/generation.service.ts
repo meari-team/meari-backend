@@ -12,6 +12,7 @@ import type {
   AnswersDto,
   ConfirmDto,
   EntryDto,
+  UpdateMemoryDto,
   GenerateDto,
   GenerateResultDto,
 } from '../entries/entries.dto.js';
@@ -278,6 +279,54 @@ export class GenerationService {
     const confirmed = await this.entries.get(userId, date);
     if (!entry.excludedFromMemory) this.memorySync.schedule(entry.id);
     return confirmed;
+  }
+
+  // G5: 기억에서 제외/복원. 제외는 AI 기억을 먼저 지워야 성공 (실패 시 503, 상태 유지)
+  async setMemory(
+    userId: string,
+    date: string,
+    dto: UpdateMemoryDto,
+  ): Promise<EntryDto> {
+    const entry = await this.prisma.entry.findUnique({
+      where: { userId_entryDate: { userId, entryDate: toDbDate(date) } },
+      select: { id: true, status: true, excludedFromMemory: true },
+    });
+    if (!entry) throw entryNotFound();
+    if (entry.status !== 'CONFIRMED') {
+      throw new AppException(
+        'INVALID_ENTRY_STATE',
+        HttpStatus.CONFLICT,
+        '확정된 일기만 기억에서 제외할 수 있어요.',
+        { status: entry.status, action: 'memory' },
+      );
+    }
+
+    if (dto.excluded) {
+      await this.memorySync.exclusive(entry.id, async () => {
+        await this.ai.deleteDiaryIndex(userId, entry.id);
+        await this.prisma.entry.update({
+          where: { id: entry.id },
+          data: {
+            excludedFromMemory: true,
+            aiIndexStatus: 'NONE',
+            aiIndexError: null,
+          },
+        });
+      });
+      return this.entries.get(userId, date);
+    }
+
+    await this.prisma.entry.update({
+      where: { id: entry.id },
+      data: {
+        excludedFromMemory: false,
+        aiIndexStatus: 'PENDING',
+        aiIndexError: null,
+      },
+    });
+    const restored = await this.entries.get(userId, date);
+    this.memorySync.schedule(entry.id);
+    return restored;
   }
 
   private async load(
