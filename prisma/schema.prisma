@@ -57,6 +57,7 @@ model User {
   photos       Photo[]
   categories   ChecklistCategory[]
   chatSessions ChatSession[]
+  schedules    Schedule[]
 
   @@map("users")
 }
@@ -197,4 +198,20 @@ model ChatMessage {
 
   @@index([sessionId, createdAt])
   @@map("chat_messages")
+}
+
+// 캘린더 일정. 일기 생성 때 그날 일정을 AI 설명에 덧붙인다
+model Schedule {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  date      DateTime @db.Date
+  title     String   @db.VarChar(50)
+  time      String?  @db.VarChar(5) // "HH:mm", 없으면 종일
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@map("schedules")
 }

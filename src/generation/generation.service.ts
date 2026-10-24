@@ -22,6 +22,7 @@ import { assertCanDo } from '../entries/entry-state.js';
 import { toQuestionDto } from '../entries/entry.mapper.js';
 import { MemorySyncService } from '../memory-sync/memory-sync.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { SchedulesService } from '../schedules/schedules.service.js';
 import { PhotoStorage } from '../storage/photo-storage.js';
 
 const MAX_QUESTIONS = 2; // AI 서버 계약
@@ -40,16 +41,20 @@ type EntryForGeneration = Prisma.EntryGetPayload<{
   include: typeof generationInclude;
 }>;
 
-// AI에 보낼 설명: 하루 한 줄 설명 + 사진별 캡션
-export function describeEntry(entry: {
-  note: string | null;
-  photos: { caption: string | null }[];
-}): string {
+// AI에 보낼 설명: 하루 한 줄 설명 + 사진별 캡션 + 그날 일정(시간순, 호출하는 쪽에서 정렬)
+export function describeEntry(
+  entry: {
+    note: string | null;
+    photos: { caption: string | null }[];
+  },
+  schedules: { title: string; time: string | null }[] = [],
+): string {
   return [
     entry.note,
     ...entry.photos.map((p, i) =>
       p.caption ? `사진 ${i + 1}: ${p.caption}` : null,
     ),
+    ...schedules.map((s) => `일정: ${s.time ? `${s.time} ` : ''}${s.title}`),
   ]
     .filter((line): line is string => !!line)
     .join('\n');
@@ -72,6 +77,7 @@ export class GenerationService {
     private readonly ai: AiClient,
     private readonly entries: EntriesService,
     private readonly memorySync: MemorySyncService,
+    private readonly schedules: SchedulesService,
   ) {}
 
   // G1: 사진 분석(캐시) → 추가 질문 0~2개
@@ -86,7 +92,10 @@ export class GenerationService {
       );
     }
 
-    const description = describeEntry(entry);
+    const description = describeEntry(
+      entry,
+      await this.schedules.forDate(userId, date),
+    );
     const analysis =
       (entry.imageAnalysis as ImageAnalysis | null) ??
       (await this.analyzeAndCache(entry, description));
@@ -218,7 +227,10 @@ export class GenerationService {
       entry = await this.load(userId, date);
     }
 
-    const description = describeEntry(entry);
+    const description = describeEntry(
+      entry,
+      await this.schedules.forDate(userId, date),
+    );
     const analysis =
       (entry.imageAnalysis as ImageAnalysis | null) ??
       (await this.analyzeAndCache(entry, description));

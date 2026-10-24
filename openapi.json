@@ -1386,6 +1386,254 @@
         ]
       }
     },
+    "/api/v1/schedules": {
+      "get": {
+        "operationId": "SchedulesController_list",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "description": "from부터 최대 366일",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "기간 일정 목록 (S2) — 최대 366일, 날짜 → 시간(종일 먼저) → 등록순",
+        "tags": [
+          "schedules"
+        ]
+      },
+      "post": {
+        "description": "그날 일기를 만들 때 일정이 AI 설명에 함께 들어간다.",
+        "operationId": "SchedulesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "SCHEDULE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "일정 추가 (S3) — 미래 날짜 허용, 하루 20개까지",
+        "tags": [
+          "schedules"
+        ]
+      }
+    },
+    "/api/v1/schedules/{id}": {
+      "patch": {
+        "operationId": "SchedulesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SCHEDULE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "SCHEDULE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "일정 수정 (S4) — time: null이면 종일로",
+        "tags": [
+          "schedules"
+        ]
+      },
+      "delete": {
+        "operationId": "SchedulesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SCHEDULE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "일정 삭제 (S5)",
+        "tags": [
+          "schedules"
+        ]
+      }
+    },
     "/api/v1/past-self/availability": {
       "get": {
         "description": "anchorDate를 주면 그 시점까지의 기록 수·첫 기록일, 생략하면 프리셋(1W·1M·3M·6M·1Y) 전체. 기록 = 확정됐고 기억에서 제외되지 않은 일기. 7일 이상이어야 대화 가능.",
@@ -2428,6 +2676,102 @@
           "excluded"
         ]
       },
+      "ScheduleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-24"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "time": {
+            "type": "string",
+            "nullable": true,
+            "example": "14:00",
+            "description": "HH:mm, 없으면 종일"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "title",
+          "time",
+          "createdAt"
+        ]
+      },
+      "ScheduleListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "날짜 → 시간(종일이 먼저) → 등록순",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateScheduleDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-24",
+            "description": "미래 날짜 허용"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "time": {
+            "type": "string",
+            "nullable": true,
+            "example": "14:00"
+          }
+        },
+        "required": [
+          "date",
+          "title"
+        ]
+      },
+      "UpdateScheduleDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-25"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "time": {
+            "type": "string",
+            "nullable": true,
+            "example": "14:00",
+            "description": "null이면 시간을 지운다(종일)"
+          }
+        }
+      },
       "AvailabilityDto": {
         "type": "object",
         "properties": {
@@ -2715,6 +3059,7 @@
           "PHOTO_NOT_FOUND",
           "SESSION_NOT_FOUND",
           "CATEGORY_NOT_FOUND",
+          "SCHEDULE_NOT_FOUND",
           "EMAIL_TAKEN",
           "INVALID_ENTRY_STATE",
           "FILE_TOO_LARGE",
@@ -2724,6 +3069,7 @@
           "PHOTO_REQUIRED",
           "NOT_ENOUGH_RECORDS",
           "SESSION_MESSAGE_LIMIT",
+          "SCHEDULE_LIMIT_EXCEEDED",
           "TOO_MANY_REQUESTS",
           "AI_UPSTREAM_ERROR",
           "AI_INDEX_UNAVAILABLE",

@@ -9,6 +9,7 @@ import { HealthController } from './health/health.controller.js';
 import { MemorySyncModule } from './memory-sync/memory-sync.module.js';
 import { PastSelfModule } from './past-self/past-self.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { SchedulesModule } from './schedules/schedules.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module.js';
     ChecklistModule,
     EntriesModule,
     PastSelfModule,
+    SchedulesModule,
   ],
   controllers: [HealthController],
 })
