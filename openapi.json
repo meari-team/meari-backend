@@ -1122,7 +1122,7 @@
     },
     "/api/v1/entries/{date}/generate": {
       "post": {
-        "description": "목 응답을 돌려준다. MEA-11에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "READY·GENERATED(재생성)에서 가능. QUESTIONING이면 skipRemainingQuestions: true(\"그냥 생성\")로 남은 질문을 건너뛴다. 초안만 만들고 확정·색인하지 않는다.",
         "operationId": "GenerationController_generate",
         "parameters": [
           {
@@ -1217,7 +1217,7 @@
             }
           }
         },
-        "summary": "AI 일기 초안 생성 (G3) [STUB]",
+        "summary": "AI 일기 초안 생성 (G3)",
         "tags": [
           "generation"
         ]
@@ -1225,7 +1225,7 @@
     },
     "/api/v1/entries/{date}/confirm": {
       "post": {
-        "description": "목 응답을 돌려준다. MEA-11에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "READY(직접 작성)·GENERATED·CONFIRMED(수정 후 재확정)에서 가능. 확정본만 기억이 된다: aiIndexStatus가 PENDING이 되고 서버가 AI 색인을 진행한다 (기억에서 제외된 일기는 NONE).",
         "operationId": "GenerationController_confirm",
         "parameters": [
           {
@@ -1300,7 +1300,7 @@
             }
           }
         },
-        "summary": "최종본 확정 → AI 색인 (G4) [STUB]",
+        "summary": "최종본 확정 (G4)",
         "tags": [
           "generation"
         ]
