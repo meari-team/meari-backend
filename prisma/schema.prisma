@@ -1,0 +1,200 @@
+// 메인 DB 스키마. 설계 근거는 meari-docs/erd.md
+// 날짜(@db.Date)는 모두 KST 기준 기록일이다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum DiaryStyle {
+  PLAIN
+  EMOTIONAL
+  SUMMARY
+}
+
+enum EntryStatus {
+  DRAFT
+  QUESTIONING
+  READY
+  GENERATED
+  CONFIRMED
+}
+
+enum AiIndexStatus {
+  NONE
+  PENDING
+  INDEXED
+  FAILED
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+enum ChatFlag {
+  NONE
+  NO_EVIDENCE
+  LEAK_BLOCKED
+  CRISIS
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  nickname     String     @db.VarChar(20)
+  diaryStyle   DiaryStyle @default(PLAIN) @map("diary_style")
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  entries      Entry[]
+  photos       Photo[]
+  categories   ChecklistCategory[]
+  chatSessions ChatSession[]
+
+  @@map("users")
+}
+
+model Entry {
+  id                 String        @id @default(uuid()) @db.Uuid
+  userId             String        @map("user_id") @db.Uuid
+  entryDate          DateTime      @map("entry_date") @db.Date
+  status             EntryStatus   @default(DRAFT)
+  note               String?       @db.VarChar(200)
+  imageAnalysis      Json?         @map("image_analysis")
+  aiDraft            String?       @map("ai_draft")
+  aiUncertain        Json?         @map("ai_uncertain")
+  finalContent       String?       @map("final_content")
+  summary            String?       @db.VarChar(300)
+  coverPhotoId       String?       @unique @map("cover_photo_id") @db.Uuid
+  excludedFromMemory Boolean       @default(false) @map("excluded_from_memory")
+  aiIndexStatus      AiIndexStatus @default(NONE) @map("ai_index_status")
+  aiIndexError       String?       @map("ai_index_error") @db.VarChar(50)
+  confirmedAt        DateTime?     @map("confirmed_at") @db.Timestamptz
+  aiIndexedAt        DateTime?     @map("ai_indexed_at") @db.Timestamptz
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coverPhoto Photo?          @relation("EntryCover", fields: [coverPhotoId], references: [id], onDelete: SetNull)
+  photos     Photo[]         @relation("EntryPhotos")
+  questions  EntryQuestion[]
+  checks     EntryCheck[]
+  // 부분 인덱스 2개(색인 재처리용, 확정 기록 카운트용)는 마이그레이션 SQL에 직접 추가했다
+
+  @@unique([userId, entryDate])
+  @@map("entries")
+}
+
+model Photo {
+  id         String   @id @default(uuid()) @db.Uuid
+  entryId    String   @map("entry_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  storageKey String   @map("storage_key") @db.VarChar(255)
+  width      Int?
+  height     Int?
+  caption    String?  @db.VarChar(100)
+  sortOrder  Int      @map("sort_order") @db.SmallInt
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  entry   Entry  @relation("EntryPhotos", fields: [entryId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coverOf Entry? @relation("EntryCover")
+
+  @@index([entryId, sortOrder])
+  @@map("photos")
+}
+
+model EntryQuestion {
+  id           String  @id @default(uuid()) @db.Uuid
+  entryId      String  @map("entry_id") @db.Uuid
+  aiQuestionId String  @map("ai_question_id") @db.VarChar(40)
+  question     String  @db.VarChar(500)
+  reason       String  @db.VarChar(500)
+  options      Json?
+  answer       String? @db.VarChar(2000)
+  skipped      Boolean @default(false)
+  sortOrder    Int     @map("sort_order") @db.SmallInt
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId, sortOrder])
+  @@map("entry_questions")
+}
+
+model ChecklistCategory {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @db.VarChar(20)
+  color     String   @db.Char(7)
+  sortOrder Int      @map("sort_order") @db.SmallInt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ChecklistItem[]
+
+  @@index([userId, sortOrder])
+  @@map("checklist_categories")
+}
+
+model ChecklistItem {
+  id         String @id @default(uuid()) @db.Uuid
+  categoryId String @map("category_id") @db.Uuid
+  label      String @db.VarChar(20)
+  sortOrder  Int    @map("sort_order") @db.SmallInt
+
+  category ChecklistCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  checks   EntryCheck[]
+
+  @@index([categoryId, sortOrder])
+  @@map("checklist_items")
+}
+
+model EntryCheck {
+  entryId String @map("entry_id") @db.Uuid
+  itemId  String @map("item_id") @db.Uuid
+
+  entry Entry         @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  item  ChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([entryId, itemId])
+  @@index([itemId])
+  @@map("entry_checks")
+}
+
+model ChatSession {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  anchorDate    DateTime  @map("anchor_date") @db.Date
+  messageCount  Int       @default(0) @map("message_count")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  lastMessageAt DateTime? @map("last_message_at") @db.Timestamptz
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([userId, lastMessageAt(sort: Desc)])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  role      ChatRole
+  content   String
+  citations Json?
+  flag      ChatFlag @default(NONE)
+  latencyMs Int?     @map("latency_ms")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
+}
