@@ -1,3 +1,4 @@
+import { RateLimit } from '../rate-limit/rate-limit.js';
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -20,6 +21,7 @@ import { SignupDto } from './dto/signup.dto.js';
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  @RateLimit('auth')
   @Post('signup')
   @ApiOperation({ summary: '회원가입 (A1) — 기본 체크리스트 생성' })
   @ApiCreatedResponse({ type: AuthResultDto })
@@ -28,6 +30,7 @@ export class AuthController {
     return this.auth.signup(dto);
   }
 
+  @RateLimit('auth')
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '로그인 (A2)' })
