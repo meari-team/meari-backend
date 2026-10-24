@@ -13,6 +13,8 @@ const CODE_BY_STATUS: Partial<Record<number, ErrorCode>> = {
   [HttpStatus.BAD_REQUEST]: 'VALIDATION_FAILED',
   [HttpStatus.UNAUTHORIZED]: 'UNAUTHORIZED',
   [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
+  [HttpStatus.PAYLOAD_TOO_LARGE]: 'FILE_TOO_LARGE',
+  [HttpStatus.UNSUPPORTED_MEDIA_TYPE]: 'UNSUPPORTED_MEDIA_TYPE',
   [HttpStatus.TOO_MANY_REQUESTS]: 'TOO_MANY_REQUESTS',
 };
 
@@ -20,6 +22,8 @@ const MESSAGE_BY_CODE: Partial<Record<ErrorCode, string>> = {
   VALIDATION_FAILED: '요청 형식을 확인해 주세요.',
   UNAUTHORIZED: '로그인이 필요해요.',
   NOT_FOUND: '찾을 수 없어요.',
+  FILE_TOO_LARGE: '사진은 한 장에 4MB까지 올릴 수 있어요.',
+  UNSUPPORTED_MEDIA_TYPE: 'JPEG, PNG, WebP 사진만 올릴 수 있어요.',
   TOO_MANY_REQUESTS: '잠시 후 다시 시도해 주세요.',
   INTERNAL_ERROR: '일시적인 오류가 발생했어요.',
 };

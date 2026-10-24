@@ -703,7 +703,7 @@
     },
     "/api/v1/entries/{date}/photos": {
       "post": {
-        "description": "목 응답을 돌려준다. MEA-8에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "일기가 없으면 DRAFT로 만든다. EXIF를 지우고 JPEG(긴 변 1600px 이하)로 다시 저장한다. 사진이 바뀌면 이전 분석·질문을 지우고, 확정 전 일기는 DRAFT로 되돌린다.",
         "operationId": "PhotosController_upload",
         "parameters": [
           {
@@ -721,7 +721,26 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UploadPhotosDto"
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "maxItems": 3,
+                    "description": "jpeg/png/webp, 장당 4MB"
+                  },
+                  "captions": {
+                    "type": "string",
+                    "description": "files와 같은 순서의 캡션 배열(JSON 문자열), 각 100자 이하",
+                    "example": "[\"카페에서\", \"\"]"
+                  }
+                }
               }
             }
           }
@@ -733,6 +752,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PhotoListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -778,7 +807,7 @@
             }
           }
         },
-        "summary": "사진 업로드 (F1) — multipart, 최대 3장 [STUB]",
+        "summary": "사진 업로드 (F1) — 일기당 최대 3장, 장당 4MB",
         "tags": [
           "photos"
         ]
@@ -786,7 +815,6 @@
     },
     "/api/v1/entries/{date}/photos/{photoId}": {
       "patch": {
-        "description": "목 응답을 돌려준다. MEA-8에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "PhotosController_update",
         "parameters": [
           {
@@ -859,13 +887,12 @@
             }
           }
         },
-        "summary": "캡션·순서 변경 (F2) [STUB]",
+        "summary": "캡션·순서 변경 (F2) — sortOrder를 바꾸면 나머지가 밀린다",
         "tags": [
           "photos"
         ]
       },
       "delete": {
-        "description": "목 응답을 돌려준다. MEA-8에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "PhotosController_remove",
         "parameters": [
           {
@@ -911,7 +938,7 @@
             }
           }
         },
-        "summary": "사진 삭제 (F3) [STUB]",
+        "summary": "사진 삭제 (F3)",
         "tags": [
           "photos"
         ]
@@ -2241,28 +2268,6 @@
             }
           }
         }
-      },
-      "UploadPhotosDto": {
-        "type": "object",
-        "properties": {
-          "files": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "binary"
-            },
-            "maxItems": 3,
-            "description": "jpeg/png/webp, 장당 4MB"
-          },
-          "captions": {
-            "type": "string",
-            "description": "files와 같은 순서의 캡션 배열(JSON 문자열)",
-            "example": "[\"카페에서\", \"\"]"
-          }
-        },
-        "required": [
-          "files"
-        ]
       },
       "PhotoListDto": {
         "type": "object",
