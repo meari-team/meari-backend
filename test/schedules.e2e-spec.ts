@@ -85,6 +85,7 @@ describe('Schedules (e2e)', () => {
         date: '2099-01-01',
         title: '여행',
         time: null,
+        completed: false,
         createdAt: expect.any(String),
       });
     });
@@ -133,6 +134,29 @@ describe('Schedules (e2e)', () => {
         date: '2026-05-11',
         time: null,
       });
+    });
+
+    it('완료 체크: completed 토글, 다른 필드는 그대로', async () => {
+      const { body } = await add(me, {
+        date: '2026-05-12',
+        title: '과제',
+        time: '09:00',
+      }).expect(201);
+      const done = await as(me)
+        .patch(`/api/v1/schedules/${body.id}`, { completed: true })
+        .expect(200);
+      expect(done.body).toMatchObject({
+        title: '과제',
+        time: '09:00',
+        completed: true,
+      });
+      const undone = await as(me)
+        .patch(`/api/v1/schedules/${body.id}`, { completed: false })
+        .expect(200);
+      expect(undone.body.completed).toBe(false);
+      await as(me)
+        .patch(`/api/v1/schedules/${body.id}`, { completed: 'yes' })
+        .expect(400);
     });
 
     it('삭제 → 204, 다시 삭제하면 404', async () => {

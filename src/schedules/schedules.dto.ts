@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsOptional,
   IsString,
   Length,
@@ -30,6 +31,9 @@ export class ScheduleDto {
     description: 'HH:mm, 없으면 종일',
   })
   time: string | null;
+
+  @ApiProperty({ description: '완료 체크 여부 (캘린더 체크박스)' })
+  completed: boolean;
 
   @ApiProperty({ format: 'date-time' })
   createdAt: string;
@@ -102,4 +106,9 @@ export class UpdateScheduleDto {
   @ValidateIf((_, v) => v !== null)
   @Matches(TIME_RE)
   time?: string | null;
+
+  @ApiPropertyOptional({ description: '완료 체크 토글' })
+  @IsOptional()
+  @IsBoolean()
+  completed?: boolean;
 }

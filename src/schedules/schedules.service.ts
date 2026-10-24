@@ -48,6 +48,7 @@ export function toScheduleDto(s: Schedule): ScheduleDto {
     date: fromDbDate(s.date),
     title: s.title,
     time: s.time,
+    completed: s.completed,
     createdAt: s.createdAt.toISOString(),
   };
 }
@@ -114,6 +115,7 @@ export class SchedulesService {
         ...(dto.date !== undefined ? { date: toDbDate(dto.date) } : {}),
         ...(dto.title !== undefined ? { title: dto.title } : {}),
         ...(dto.time !== undefined ? { time: dto.time } : {}),
+        ...(dto.completed !== undefined ? { completed: dto.completed } : {}),
       },
     });
     return toScheduleDto(s);

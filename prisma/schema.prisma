@@ -207,6 +207,7 @@ model Schedule {
   date      DateTime @db.Date
   title     String   @db.VarChar(50)
   time      String?  @db.VarChar(5) // "HH:mm", 없으면 종일
+  completed Boolean  @default(false) // 캘린더 체크박스
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

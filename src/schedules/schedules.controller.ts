@@ -67,7 +67,7 @@ export class SchedulesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: '일정 수정 (S4) — time: null이면 종일로' })
+  @ApiOperation({ summary: '일정 수정 (S4) — time: null이면 종일로, completed로 완료 체크' })
   @ApiOkResponse({ type: ScheduleDto })
   @ApiErrors({
     400: ['VALIDATION_FAILED'],
