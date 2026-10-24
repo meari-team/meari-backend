@@ -8,39 +8,52 @@ import {
   Param,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
 import {
+  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
+import {
+  CurrentUser,
+  type AuthUser,
+} from '../common/decorators/current-user.decorator.js';
+import { daysBetween } from '../common/dates.js';
 import { AppException } from '../common/errors/app.exception.js';
 import { ParseDatePipe } from '../common/pipes/parse-date.pipe.js';
-import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
-import { stubEntry, stubEntrySummaries } from '../stubs/fixtures.js';
+import { ApiErrors } from '../common/swagger/api-docs.js';
 import {
   EntriesRangeQueryDto,
   EntryDto,
   EntrySummaryListDto,
   UpsertEntryDto,
 } from './entries.dto.js';
+import { EntriesService } from './entries.service.js';
 
 const MAX_RANGE_DAYS = 366;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 @ApiTags('entries')
 @ApiErrors({ 401: ['UNAUTHORIZED'] })
 @Controller('entries')
 export class EntriesController {
+  constructor(private readonly entries: EntriesService) {}
+
   @Get()
-  @ApiStub('캘린더용 기간 목록 (E1)', 'MEA-7')
+  @ApiOperation({
+    summary: '캘린더용 기간 목록 (E1) — 월간·연간 공용, 최대 366일',
+  })
   @ApiOkResponse({ type: EntrySummaryListDto })
   @ApiErrors({ 400: ['VALIDATION_FAILED'] })
-  list(@Query() { from, to }: EntriesRangeQueryDto): EntrySummaryListDto {
-    const days =
-      (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) /
-      DAY_MS;
+  async list(
+    @CurrentUser() user: AuthUser,
+    @Query() { from, to }: EntriesRangeQueryDto,
+  ): Promise<EntrySummaryListDto> {
+    const days = daysBetween(from, to);
     if (!(days >= 0 && days < MAX_RANGE_DAYS)) {
       throw new AppException(
         'VALIDATION_FAILED',
@@ -49,44 +62,54 @@ export class EntriesController {
         [{ field: 'to', reasons: ['range'] }],
       );
     }
-    return { items: stubEntrySummaries(from, to) };
+    return { items: await this.entries.listRange(user.id, from, to) };
   }
 
   @Get(':date')
   @ApiParam({ name: 'date', example: '2026-10-24' })
-  @ApiStub('일기 상세 (E2)', 'MEA-7')
+  @ApiOperation({ summary: '일기 상세 (E2)' })
   @ApiOkResponse({ type: EntryDto })
   @ApiErrors({ 404: ['ENTRY_NOT_FOUND'], 422: ['DATE_IN_FUTURE'] })
-  get(@Param('date', ParseDatePipe) date: string): EntryDto {
-    return stubEntry(date);
+  get(
+    @CurrentUser() user: AuthUser,
+    @Param('date', ParseDatePipe) date: string,
+  ): Promise<EntryDto> {
+    return this.entries.get(user.id, date);
   }
 
   @Put(':date')
   @ApiParam({ name: 'date', example: '2026-10-24' })
-  @ApiStub('일기 생성/입력 저장 (E3) — 없으면 201, 있으면 200', 'MEA-7')
+  @ApiOperation({
+    summary: '일기 생성/입력 저장 (E3) — 없으면 201, 있으면 200',
+    description:
+      'note: 생략하면 유지, null이면 삭제. checkedItemIds: 보내면 전체 교체.',
+  })
+  @ApiCreatedResponse({ type: EntryDto })
   @ApiOkResponse({ type: EntryDto })
   @ApiErrors({ 400: ['VALIDATION_FAILED'], 422: ['DATE_IN_FUTURE'] })
-  upsert(
+  async upsert(
+    @CurrentUser() user: AuthUser,
     @Param('date', ParseDatePipe) date: string,
     @Body() dto: UpsertEntryDto,
-  ): EntryDto {
-    const entry = stubEntry(date);
-    return {
-      ...entry,
-      status: 'DRAFT',
-      note: dto.note ?? entry.note,
-      checkedItemIds: dto.checkedItemIds ?? entry.checkedItemIds,
-      questions: [],
-      aiDraft: null,
-      aiUncertain: [],
-    };
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<EntryDto> {
+    const { created, entry } = await this.entries.upsert(user.id, date, dto);
+    res.status(created ? HttpStatus.CREATED : HttpStatus.OK);
+    return entry;
   }
 
   @Delete(':date')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'date', example: '2026-10-24' })
-  @ApiStub('일기 삭제 (E4) — 사진·AI 색인 포함', 'MEA-7')
+  @ApiOperation({
+    summary: '일기 삭제 (E4) — AI 색인을 먼저 지우고, 실패하면 503',
+  })
   @ApiNoContentResponse()
   @ApiErrors({ 404: ['ENTRY_NOT_FOUND'], 503: ['AI_INDEX_UNAVAILABLE'] })
-  remove(@Param('date', ParseDatePipe) _date: string): void {}
+  remove(
+    @CurrentUser() user: AuthUser,
+    @Param('date', ParseDatePipe) date: string,
+  ): Promise<void> {
+    return this.entries.remove(user.id, date);
+  }
 }

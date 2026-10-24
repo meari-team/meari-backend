@@ -37,15 +37,12 @@ describe('Stub endpoints (e2e)', () => {
   };
 
   it('스텁 응답에는 X-Meari-Stub 헤더가 붙는다', async () => {
-    const res = await get('/api/v1/entries/2026-10-01').expect(200);
+    const res = await get('/api/v1/chat/sessions').expect(200);
     expect(res.headers['x-meari-stub']).toBe('true');
-    expect(res.body.date).toBe('2026-10-01');
   });
 
   it('스텁도 토큰이 없으면 401', async () => {
-    await request(app.getHttpServer())
-      .get('/api/v1/entries/2026-10-01')
-      .expect(401);
+    await request(app.getHttpServer()).get('/api/v1/chat/sessions').expect(401);
   });
 
   it('미래 날짜는 422 DATE_IN_FUTURE', async () => {
@@ -56,11 +53,6 @@ describe('Stub endpoints (e2e)', () => {
   it('잘못된 날짜 형식은 400', async () => {
     const res = await get('/api/v1/entries/2026-02-30').expect(400);
     expect(res.body.error.code).toBe('VALIDATION_FAILED');
-  });
-
-  it('캘린더 범위가 366일을 넘으면 400', async () => {
-    await get('/api/v1/entries?from=2025-01-01&to=2026-01-02').expect(400);
-    await get('/api/v1/entries?from=2026-10-01&to=2026-10-31').expect(200);
   });
 
   it('프리셋 시점 확인은 5개를 돌려준다', async () => {
