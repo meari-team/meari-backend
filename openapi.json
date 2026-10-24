@@ -946,7 +946,7 @@
     },
     "/api/v1/entries/{date}/analyze": {
       "post": {
-        "description": "목 응답을 돌려준다. MEA-10에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "사진 분석 결과는 저장해 두고 재사용한다(사진이 바뀌면 다시 분석). 질문은 매번 새로 만든다(최대 2개). 질문이 있으면 QUESTIONING, 없으면 READY. 분석·질문을 합쳐 수십 초 걸릴 수 있다.",
         "operationId": "GenerationController_analyze",
         "parameters": [
           {
@@ -1031,7 +1031,7 @@
             }
           }
         },
-        "summary": "사진 분석 + 추가 질문 (G1) [STUB]",
+        "summary": "사진 분석 + 추가 질문 (G1)",
         "tags": [
           "generation"
         ]
@@ -1039,7 +1039,7 @@
     },
     "/api/v1/entries/{date}/answers": {
       "put": {
-        "description": "목 응답을 돌려준다. MEA-10에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "모든 질문이 답변되거나 건너뛰어지면 READY. answer와 skipped: true는 함께 보낼 수 없다.",
         "operationId": "GenerationController_answer",
         "parameters": [
           {
@@ -1114,7 +1114,7 @@
             }
           }
         },
-        "summary": "질문 답변/건너뛰기 (G2) [STUB]",
+        "summary": "질문 답변/건너뛰기 (G2)",
         "tags": [
           "generation"
         ]
