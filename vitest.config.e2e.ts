@@ -10,6 +10,8 @@ export default defineConfig({
     fileParallelism: false,
     env: {
       JWT_SECRET: 'e2e-test-secret-e2e-test-secret-0000',
+      STORAGE_LOCAL_DIR: '.test-uploads',
+      PUBLIC_BASE_URL: 'http://test.local',
     },
   },
 });

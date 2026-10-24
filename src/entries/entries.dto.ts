@@ -206,21 +206,36 @@ export class UpsertEntryDto {
   checkedItemIds?: string[];
 }
 
+// multipart 본문 중 텍스트 필드. 파일(files)은 multer가 받아 @UploadedFiles()로 들어온다.
 export class UploadPhotosDto {
-  @ApiProperty({
-    type: 'array',
-    items: { type: 'string', format: 'binary' },
-    maxItems: 3,
-    description: 'jpeg/png/webp, 장당 4MB',
-  })
-  files: unknown[];
-
   @ApiPropertyOptional({
-    description: 'files와 같은 순서의 캡션 배열(JSON 문자열)',
+    description: 'files와 같은 순서의 캡션 배열(JSON 문자열), 각 100자 이하',
     example: '["카페에서", ""]',
   })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
   captions?: string;
 }
+
+// Swagger 문서용 multipart 스키마
+export const uploadPhotosBodySchema = {
+  type: 'object',
+  required: ['files'],
+  properties: {
+    files: {
+      type: 'array',
+      items: { type: 'string', format: 'binary' },
+      maxItems: 3,
+      description: 'jpeg/png/webp, 장당 4MB',
+    },
+    captions: {
+      type: 'string',
+      description: 'files와 같은 순서의 캡션 배열(JSON 문자열), 각 100자 이하',
+      example: '["카페에서", ""]',
+    },
+  },
+};
 
 export class UpdatePhotoDto {
   @ApiPropertyOptional({ maxLength: 100 })

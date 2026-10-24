@@ -1,9 +1,15 @@
 import { Global, Module } from '@nestjs/common';
-import { NoopPhotoStorage, PhotoStorage } from './photo-storage.js';
+import { FilesController } from './files.controller.js';
+import { LocalPhotoStorage } from './local-photo-storage.js';
+import { PhotoStorage } from './photo-storage.js';
 
 @Global()
 @Module({
-  providers: [{ provide: PhotoStorage, useClass: NoopPhotoStorage }],
+  controllers: [FilesController],
+  providers: [
+    LocalPhotoStorage,
+    { provide: PhotoStorage, useExisting: LocalPhotoStorage },
+  ],
   exports: [PhotoStorage],
 })
 export class StorageModule {}
