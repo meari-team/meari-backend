@@ -21,8 +21,7 @@ import {
   CurrentUser,
   type AuthUser,
 } from '../common/decorators/current-user.decorator.js';
-import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
-import { stubCategories } from '../stubs/fixtures.js';
+import { ApiErrors } from '../common/swagger/api-docs.js';
 import {
   ChecklistCategoryDto,
   ChecklistCategoryListDto,
@@ -45,42 +44,41 @@ export class ChecklistController {
   }
 
   @Post()
-  @ApiStub('카테고리 추가 (C2, P1)', 'MEA-후속')
+  @ApiOperation({ summary: '카테고리 추가 (C2) — 맨 뒤에, 최대 20개' })
   @ApiCreatedResponse({ type: ChecklistCategoryDto })
   @ApiErrors({ 400: ['VALIDATION_FAILED'] })
-  create(@Body() dto: CreateCategoryDto): ChecklistCategoryDto {
-    return {
-      ...stubCategories()[0],
-      name: dto.name,
-      color: dto.color,
-      items: dto.items.map((label, i) => ({
-        id: stubCategories()[0].items[0].id,
-        label,
-        sortOrder: i,
-      })),
-    };
+  create(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateCategoryDto,
+  ): Promise<ChecklistCategoryDto> {
+    return this.checklist.create(user.id, dto);
   }
 
   @Patch(':id')
-  @ApiStub('카테고리 수정 (C3, P1)', 'MEA-후속')
+  @ApiOperation({
+    summary: '카테고리 수정 (C3)',
+    description:
+      'items를 보내면 전체 교체: id가 있는 항목은 유지(과거 체크 보존), 빠진 항목은 삭제, id 없는 항목은 새로 추가.',
+  })
   @ApiOkResponse({ type: ChecklistCategoryDto })
   @ApiErrors({ 400: ['VALIDATION_FAILED'], 404: ['CATEGORY_NOT_FOUND'] })
   update(
-    @Param('id', ParseUUIDPipe) _id: string,
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCategoryDto,
-  ): ChecklistCategoryDto {
-    const base = stubCategories()[0];
-    return {
-      ...base,
-      name: dto.name ?? base.name,
-      color: dto.color ?? base.color,
-    };
+  ): Promise<ChecklistCategoryDto> {
+    return this.checklist.update(user.id, id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiStub('카테고리 삭제 (C4, P1)', 'MEA-후속')
+  @ApiOperation({ summary: '카테고리 삭제 (C4) — 항목·과거 체크 기록도 함께' })
   @ApiNoContentResponse()
   @ApiErrors({ 404: ['CATEGORY_NOT_FOUND'] })
-  remove(@Param('id', ParseUUIDPipe) _id: string): void {}
+  remove(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    return this.checklist.remove(user.id, id);
+  }
 }

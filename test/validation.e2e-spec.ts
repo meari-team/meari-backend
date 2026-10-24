@@ -3,8 +3,8 @@ import request from 'supertest';
 import { todayKst } from './../src/common/pipes/parse-date.pipe.js';
 import { createTestApp, uniqueEmail } from './utils/create-app.js';
 
-// MEA-4 스텁: 목 응답이지만 인증·입력 검증은 실제와 같다.
-describe('Stub endpoints (e2e)', () => {
+// 공통 입력 검증(날짜·길이)
+describe('Input validation (e2e)', () => {
   let app: INestApplication;
   let token: string;
 
@@ -35,19 +35,6 @@ describe('Stub endpoints (e2e)', () => {
     d.setUTCDate(d.getUTCDate() + 1);
     return d.toISOString().slice(0, 10);
   };
-
-  it('스텁 응답에는 X-Meari-Stub 헤더가 붙는다', async () => {
-    const res = await request(app.getHttpServer())
-      .patch('/api/v1/me')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ nickname: '바뀐 이름' })
-      .expect(200);
-    expect(res.headers['x-meari-stub']).toBe('true');
-  });
-
-  it('스텁도 토큰이 없으면 401', async () => {
-    await request(app.getHttpServer()).patch('/api/v1/me').send({}).expect(401);
-  });
 
   it('미래 날짜는 422 DATE_IN_FUTURE', async () => {
     const res = await get(`/api/v1/entries/${tomorrow()}`).expect(422);

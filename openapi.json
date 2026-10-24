@@ -161,7 +161,6 @@
         ]
       },
       "patch": {
-        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "UsersController_updateMe",
         "parameters": [],
         "requestBody": {
@@ -206,7 +205,7 @@
             }
           }
         },
-        "summary": "닉네임·문체 변경 (U2, P1) [STUB]",
+        "summary": "닉네임·문체 변경 (U2) — 보낸 필드만 바꾼다",
         "tags": [
           "users"
         ]
@@ -275,7 +274,6 @@
         ]
       },
       "post": {
-        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "ChecklistController_create",
         "parameters": [],
         "requestBody": {
@@ -320,7 +318,7 @@
             }
           }
         },
-        "summary": "카테고리 추가 (C2, P1) [STUB]",
+        "summary": "카테고리 추가 (C2) — 맨 뒤에, 최대 20개",
         "tags": [
           "checklist"
         ]
@@ -328,7 +326,7 @@
     },
     "/api/v1/checklist/categories/{id}": {
       "patch": {
-        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "items를 보내면 전체 교체: id가 있는 항목은 유지(과거 체크 보존), 빠진 항목은 삭제, id 없는 항목은 새로 추가.",
         "operationId": "ChecklistController_update",
         "parameters": [
           {
@@ -392,13 +390,12 @@
             }
           }
         },
-        "summary": "카테고리 수정 (C3, P1) [STUB]",
+        "summary": "카테고리 수정 (C3)",
         "tags": [
           "checklist"
         ]
       },
       "delete": {
-        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "ChecklistController_remove",
         "parameters": [
           {
@@ -435,7 +432,7 @@
             }
           }
         },
-        "summary": "카테고리 삭제 (C4, P1) [STUB]",
+        "summary": "카테고리 삭제 (C4) — 항목·과거 체크 기록도 함께",
         "tags": [
           "checklist"
         ]
@@ -1308,7 +1305,7 @@
     },
     "/api/v1/entries/{date}/memory": {
       "patch": {
-        "description": "목 응답을 돌려준다. MEA-23에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "확정된 일기만. excluded=true: AI 기억을 먼저 지우고 성공하면 제외(실패 시 503, 그대로). excluded=false: PENDING으로 바꾸고 뒤에서 다시 색인.",
         "operationId": "GenerationController_updateMemory",
         "parameters": [
           {
@@ -1362,6 +1359,16 @@
               }
             }
           },
+          "409": {
+            "description": "INVALID_ENTRY_STATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "503": {
             "description": "AI_INDEX_UNAVAILABLE",
             "content": {
@@ -1373,7 +1380,7 @@
             }
           }
         },
-        "summary": "기억에서 제외/복원 (G5, P1) [STUB]",
+        "summary": "기억에서 제외/복원 (G5)",
         "tags": [
           "generation"
         ]
@@ -1728,7 +1735,7 @@
   },
   "info": {
     "title": "메아리 API",
-    "description": "앱 ↔ NestJS API. 설계 문서: meari-docs/api.md. `[STUB]` 표시 엔드포인트는 목 응답.",
+    "description": "앱 ↔ NestJS API. 설계 문서: meari-docs/api.md",
     "version": "0.1.0",
     "contact": {}
   },

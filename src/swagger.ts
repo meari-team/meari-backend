@@ -5,9 +5,7 @@ import { ErrorResponseDto } from './common/swagger/api-docs.js';
 export function buildOpenApiDocument(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle('메아리 API')
-    .setDescription(
-      '앱 ↔ NestJS API. 설계 문서: meari-docs/api.md. `[STUB]` 표시 엔드포인트는 목 응답.',
-    )
+    .setDescription('앱 ↔ NestJS API. 설계 문서: meari-docs/api.md')
     .setVersion('0.1.0')
     .addBearerAuth()
     .addSecurityRequirements('bearer')

@@ -21,7 +21,7 @@ npm run start:dev      # http://localhost:3000
 - 레포 루트의 `openapi.json`이 계약 파일이다. FE는 이 파일로 타입을 만든다:
   `npx openapi-typescript@7.13.0 <openapi.json 경로 또는 raw URL> -o src/api/schema.d.ts`
 - DTO·컨트롤러를 바꾸면 `npm run openapi:export` 후 `openapi.json`을 같은 PR에 커밋한다. 안 하면 CI가 실패한다.
-- `[STUB]` 표시 엔드포인트는 목 응답(응답 헤더 `X-Meari-Stub: true`)이다. 인증과 입력 검증은 실제와 같다. 담당 티켓에서 실제 구현으로 바꾼다.
+- 모든 엔드포인트가 실제로 구현돼 있다 (스텁 없음). AI 없이 개발하려면 `AI_MOCK=true`.
 
 ## DB (Prisma 6.19.3)
 
