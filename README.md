@@ -15,6 +15,14 @@ npm run db:deploy      # 마이그레이션 적용
 npm run start:dev      # http://localhost:3000
 ```
 
+## API 문서 (Swagger)
+
+- 서버 실행 후 `http://localhost:3000/docs` (UI), `/docs-json` (OpenAPI JSON). `SWAGGER_ENABLED=false`면 끈다.
+- 레포 루트의 `openapi.json`이 계약 파일이다. FE는 이 파일로 타입을 만든다:
+  `npx openapi-typescript@7.13.0 <openapi.json 경로 또는 raw URL> -o src/api/schema.d.ts`
+- DTO·컨트롤러를 바꾸면 `npm run openapi:export` 후 `openapi.json`을 같은 PR에 커밋한다. 안 하면 CI가 실패한다.
+- `[STUB]` 표시 엔드포인트는 목 응답(응답 헤더 `X-Meari-Stub: true`)이다. 인증과 입력 검증은 실제와 같다. 담당 티켓에서 실제 구현으로 바꾼다.
+
 ## DB (Prisma 6.19.3)
 
 - 스키마: `prisma/schema.prisma` — 설계 근거는 meari-docs `erd.md`
@@ -36,6 +44,7 @@ npm run start:dev      # http://localhost:3000
 | `npm run db:migrate` | 마이그레이션 생성·적용 (개발) |
 | `npm run db:deploy` | 마이그레이션 적용 (CI·배포) |
 | `npm run db:studio` | Prisma Studio |
+| `npm run openapi:export` | `openapi.json` 재생성 |
 
 ## 브랜치
 
