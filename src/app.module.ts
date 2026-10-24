@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AiClientModule } from './ai-client/ai-client.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ChecklistModule } from './checklist/checklist.module.js';
 import { validateEnv } from './config/env.js';
@@ -13,6 +14,7 @@ import { UsersModule } from './users/users.module.js';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     PrismaModule,
+    AiClientModule,
     AuthModule,
     UsersModule,
     ChecklistModule,

@@ -20,7 +20,22 @@ describe('validateEnv', () => {
         ...base,
         NODE_ENV: 'production',
         JWT_SECRET: 'x'.repeat(32),
+        AI_SERVER_URL: 'http://ai',
+        AI_SERVICE_TOKEN: 't',
       }),
     ).not.toThrow();
+  });
+
+  it('production에서는 AI 서버 설정이 필수', () => {
+    const prod = {
+      ...base,
+      NODE_ENV: 'production',
+      JWT_SECRET: 'x'.repeat(32),
+    };
+    expect(() => validateEnv(prod)).toThrow('AI_SERVER_URL');
+  });
+
+  it('개발 환경에서는 AI 서버 설정 없이도 뜬다', () => {
+    expect(() => validateEnv(base)).not.toThrow();
   });
 });
