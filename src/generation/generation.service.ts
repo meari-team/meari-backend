@@ -7,7 +7,15 @@ import type {
 } from '../ai-client/ai-client.types.js';
 import { toDbDate } from '../common/dates.js';
 import { AppException } from '../common/errors/app.exception.js';
-import type { AnalyzeResultDto, AnswersDto } from '../entries/entries.dto.js';
+import type {
+  AnalyzeResultDto,
+  AnswersDto,
+  ConfirmDto,
+  EntryDto,
+  GenerateDto,
+  GenerateResultDto,
+} from '../entries/entries.dto.js';
+import { EntriesService } from '../entries/entries.service.js';
 import { entryNotFound } from '../entries/entries.service.js';
 import { assertCanDo } from '../entries/entry-state.js';
 import { toQuestionDto } from '../entries/entry.mapper.js';
@@ -18,6 +26,7 @@ const MAX_QUESTIONS = 2; // AI 서버 계약
 
 const generationInclude = {
   photos: { orderBy: { sortOrder: 'asc' } },
+  questions: { orderBy: { sortOrder: 'asc' } },
   checks: {
     select: {
       item: { select: { label: true, category: { select: { name: true } } } },
@@ -59,6 +68,7 @@ export class GenerationService {
     private readonly prisma: PrismaService,
     private readonly storage: PhotoStorage,
     private readonly ai: AiClient,
+    private readonly entries: EntriesService,
   ) {}
 
   // G1: 사진 분석(캐시) → 추가 질문 0~2개
@@ -175,6 +185,95 @@ export class GenerationService {
       status: done ? 'READY' : 'QUESTIONING',
       questions: questions.map(toQuestionDto),
     };
+  }
+
+  // G3: 초안 생성. 자동 저장·색인하지 않는다 (확정은 G4)
+  async generate(
+    userId: string,
+    date: string,
+    dto: GenerateDto,
+  ): Promise<GenerateResultDto> {
+    let entry = await this.load(userId, date);
+    assertCanDo(
+      dto.skipRemainingQuestions ? 'skipAndGenerate' : 'generate',
+      entry.status,
+    );
+    if (entry.photos.length === 0) {
+      throw new AppException(
+        'PHOTO_REQUIRED',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        '사진을 1장 이상 올려 주세요.',
+      );
+    }
+
+    // "그냥 생성": 아직 처리하지 않은 질문은 건너뛴 것으로 남긴다
+    if (dto.skipRemainingQuestions) {
+      await this.prisma.entryQuestion.updateMany({
+        where: { entryId: entry.id, answer: null, skipped: false },
+        data: { skipped: true },
+      });
+      entry = await this.load(userId, date);
+    }
+
+    const description = describeEntry(entry);
+    const analysis =
+      (entry.imageAnalysis as ImageAnalysis | null) ??
+      (await this.analyzeAndCache(entry, description));
+    const answers = Object.fromEntries(
+      entry.questions.map((q) => [q.aiQuestionId, q.skipped ? null : q.answer]),
+    );
+
+    const { content } = await this.ai.generateDiary({
+      diary_date: date,
+      image_analysis: analysis,
+      description: description || null,
+      checklist: checklistOf(entry),
+      clarification_answers: entry.questions.length > 0 ? answers : null,
+    });
+
+    const coverPhotoId = entry.coverPhotoId ?? entry.photos[0].id;
+    await this.prisma.entry.update({
+      where: { id: entry.id },
+      data: {
+        aiDraft: content,
+        aiUncertain: [], // AI-3(추정 문장)이 붙으면 채운다
+        coverPhotoId,
+        status: 'GENERATED',
+      },
+    });
+    return {
+      status: 'GENERATED',
+      aiDraft: content,
+      aiUncertain: [],
+      coverPhotoId,
+    };
+  }
+
+  // G4: 확정. 확정본만 기억이 된다 → 색인 대기(PENDING)로 표시하고,
+  // 실제 색인은 메모리 동기화(MEA-12)가 한다
+  async confirm(
+    userId: string,
+    date: string,
+    dto: ConfirmDto,
+  ): Promise<EntryDto> {
+    const entry = await this.prisma.entry.findUnique({
+      where: { userId_entryDate: { userId, entryDate: toDbDate(date) } },
+      select: { id: true, status: true, excludedFromMemory: true },
+    });
+    if (!entry) throw entryNotFound();
+    assertCanDo('confirm', entry.status);
+
+    await this.prisma.entry.update({
+      where: { id: entry.id },
+      data: {
+        finalContent: dto.finalContent,
+        status: 'CONFIRMED',
+        confirmedAt: new Date(),
+        aiIndexStatus: entry.excludedFromMemory ? 'NONE' : 'PENDING',
+        aiIndexError: null,
+      },
+    });
+    return this.entries.get(userId, date);
   }
 
   private async load(

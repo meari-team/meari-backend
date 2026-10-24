@@ -21,7 +21,7 @@ import {
 import { GenerationService } from '../generation/generation.service.js';
 import { ParseDatePipe } from '../common/pipes/parse-date.pipe.js';
 import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
-import { STUB_DRAFT, stubEntry } from '../stubs/fixtures.js';
+import { stubEntry } from '../stubs/fixtures.js';
 import {
   AnalyzeResultDto,
   AnswersDto,
@@ -83,7 +83,12 @@ export class GenerationController {
 
   @Post('generate')
   @HttpCode(HttpStatus.OK)
-  @ApiStub('AI 일기 초안 생성 (G3)', 'MEA-11')
+  @ApiOperation({
+    summary: 'AI 일기 초안 생성 (G3)',
+    description:
+      'READY·GENERATED(재생성)에서 가능. QUESTIONING이면 skipRemainingQuestions: true("그냥 생성")로 남은 질문을 건너뛴다. ' +
+      '초안만 만들고 확정·색인하지 않는다.',
+  })
   @ApiOkResponse({ type: GenerateResultDto })
   @ApiErrors({
     409: ['INVALID_ENTRY_STATE'],
@@ -91,34 +96,29 @@ export class GenerationController {
     ...AI_ERRORS,
   })
   generate(
+    @CurrentUser() user: AuthUser,
     @Param('date', ParseDatePipe) date: string,
-    @Body() _dto: GenerateDto,
-  ): GenerateResultDto {
-    const entry = stubEntry(date);
-    return {
-      status: 'GENERATED',
-      aiDraft: STUB_DRAFT,
-      aiUncertain: entry.aiUncertain,
-      coverPhotoId: entry.coverPhotoId,
-    };
+    @Body() dto: GenerateDto,
+  ): Promise<GenerateResultDto> {
+    return this.generation.generate(user.id, date, dto);
   }
 
   @Post('confirm')
   @HttpCode(HttpStatus.OK)
-  @ApiStub('최종본 확정 → AI 색인 (G4)', 'MEA-11')
+  @ApiOperation({
+    summary: '최종본 확정 (G4)',
+    description:
+      'READY(직접 작성)·GENERATED·CONFIRMED(수정 후 재확정)에서 가능. 확정본만 기억이 된다: ' +
+      'aiIndexStatus가 PENDING이 되고 서버가 AI 색인을 진행한다 (기억에서 제외된 일기는 NONE).',
+  })
   @ApiOkResponse({ type: EntryDto })
   @ApiErrors({ 400: ['VALIDATION_FAILED'], 409: ['INVALID_ENTRY_STATE'] })
   confirm(
+    @CurrentUser() user: AuthUser,
     @Param('date', ParseDatePipe) date: string,
     @Body() dto: ConfirmDto,
-  ): EntryDto {
-    return {
-      ...stubEntry(date),
-      status: 'CONFIRMED',
-      finalContent: dto.finalContent,
-      aiIndexStatus: 'PENDING',
-      confirmedAt: new Date().toISOString(),
-    };
+  ): Promise<EntryDto> {
+    return this.generation.confirm(user.id, date, dto);
   }
 
   @Patch('memory')

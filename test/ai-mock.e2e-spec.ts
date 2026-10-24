@@ -29,7 +29,7 @@ describe('AI_MOCK=true (e2e)', () => {
     expect(app.get(AiClient)).toBeInstanceOf(MockAiClient);
   });
 
-  it('AI 서버 없이 사진 → 분석 → 질문 → 답변 → READY', async () => {
+  it('AI 서버 없이 사진 → 분석 → 질문 → 답변 → 초안 → 확정', async () => {
     const server = () => request(app.getHttpServer());
     const bearer = `Bearer ${me.token}`;
     const img = await sharp({
@@ -62,5 +62,18 @@ describe('AI_MOCK=true (e2e)', () => {
       })
       .expect(200);
     expect(done.body.status).toBe('READY');
+
+    const generated = await server()
+      .post('/api/v1/entries/2026-04-01/generate')
+      .set('Authorization', bearer)
+      .expect(200);
+    expect(generated.body.aiDraft).toContain('친구랑');
+
+    const confirmed = await server()
+      .post('/api/v1/entries/2026-04-01/confirm')
+      .set('Authorization', bearer)
+      .send({ finalContent: generated.body.aiDraft })
+      .expect(200);
+    expect(confirmed.body.status).toBe('CONFIRMED');
   });
 });
