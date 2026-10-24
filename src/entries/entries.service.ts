@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { AiClient } from '../ai-client/ai-client.service.js';
 import { toDbDate } from '../common/dates.js';
 import { AppException } from '../common/errors/app.exception.js';
+import { MemorySyncService } from '../memory-sync/memory-sync.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PhotoStorage } from '../storage/photo-storage.js';
 import type {
@@ -29,6 +30,7 @@ export class EntriesService {
     private readonly prisma: PrismaService,
     private readonly storage: PhotoStorage,
     private readonly ai: AiClient,
+    private readonly memorySync: MemorySyncService,
   ) {}
 
   async listRange(
@@ -116,21 +118,31 @@ export class EntriesService {
 
   // ADR-006: AI 색인을 먼저 지우고, 성공해야 DB에서 지운다.
   // "지웠는데 과거의 나가 기억하는" 상황을 막기 위해 AI 실패 시 503으로 멈춘다.
+  // 진행 중인 색인과 겹치지 않도록 같은 일기의 동기화 순서 안에서 실행한다.
   async remove(userId: string, date: string): Promise<void> {
-    const entry = await this.prisma.entry.findUnique({
+    const found = await this.prisma.entry.findUnique({
       where: { userId_entryDate: { userId, entryDate: toDbDate(date) } },
-      select: {
-        id: true,
-        aiIndexStatus: true,
-        photos: { select: { storageKey: true } },
-      },
+      select: { id: true },
     });
-    if (!entry) throw entryNotFound();
+    if (!found) throw entryNotFound();
 
-    if (entry.aiIndexStatus !== 'NONE') {
-      await this.ai.deleteDiaryIndex(userId, entry.id);
-    }
-    await this.prisma.entry.delete({ where: { id: entry.id } });
-    await this.storage.remove(entry.photos.map((p) => p.storageKey));
+    const keys = await this.memorySync.exclusive(found.id, async () => {
+      const entry = await this.prisma.entry.findUnique({
+        where: { id: found.id },
+        select: {
+          status: true,
+          aiIndexStatus: true,
+          photos: { select: { storageKey: true } },
+        },
+      });
+      if (!entry) throw entryNotFound();
+      // 한 번이라도 확정됐다면 색인됐을 수 있다 (DELETE는 멱등)
+      if (entry.status === 'CONFIRMED' || entry.aiIndexStatus !== 'NONE') {
+        await this.ai.deleteDiaryIndex(userId, found.id);
+      }
+      await this.prisma.entry.delete({ where: { id: found.id } });
+      return entry.photos.map((p) => p.storageKey);
+    });
+    await this.storage.remove(keys);
   }
 }

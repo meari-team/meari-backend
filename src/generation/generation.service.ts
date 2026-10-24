@@ -19,6 +19,7 @@ import { EntriesService } from '../entries/entries.service.js';
 import { entryNotFound } from '../entries/entries.service.js';
 import { assertCanDo } from '../entries/entry-state.js';
 import { toQuestionDto } from '../entries/entry.mapper.js';
+import { MemorySyncService } from '../memory-sync/memory-sync.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PhotoStorage } from '../storage/photo-storage.js';
 
@@ -69,6 +70,7 @@ export class GenerationService {
     private readonly storage: PhotoStorage,
     private readonly ai: AiClient,
     private readonly entries: EntriesService,
+    private readonly memorySync: MemorySyncService,
   ) {}
 
   // G1: 사진 분석(캐시) → 추가 질문 0~2개
@@ -249,8 +251,7 @@ export class GenerationService {
     };
   }
 
-  // G4: 확정. 확정본만 기억이 된다 → 색인 대기(PENDING)로 표시하고,
-  // 실제 색인은 메모리 동기화(MEA-12)가 한다
+  // G4: 확정. 확정본만 기억이 된다 → PENDING으로 표시하고 응답 후 뒤에서 색인한다
   async confirm(
     userId: string,
     date: string,
@@ -273,7 +274,10 @@ export class GenerationService {
         aiIndexError: null,
       },
     });
-    return this.entries.get(userId, date);
+    // 응답(PENDING)을 먼저 만든 뒤 색인을 시작한다
+    const confirmed = await this.entries.get(userId, date);
+    if (!entry.excludedFromMemory) this.memorySync.schedule(entry.id);
+    return confirmed;
   }
 
   private async load(
