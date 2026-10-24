@@ -14,8 +14,13 @@ import {
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  CurrentUser,
+  type AuthUser,
+} from '../common/decorators/current-user.decorator.js';
 import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
 import { stubCategories } from '../stubs/fixtures.js';
 import {
@@ -24,16 +29,19 @@ import {
   CreateCategoryDto,
   UpdateCategoryDto,
 } from './checklist.dto.js';
+import { ChecklistService } from './checklist.service.js';
 
 @ApiTags('checklist')
 @ApiErrors({ 401: ['UNAUTHORIZED'] })
 @Controller('checklist/categories')
 export class ChecklistController {
+  constructor(private readonly checklist: ChecklistService) {}
+
   @Get()
-  @ApiStub('카테고리+항목 목록 (C1)', 'MEA-7')
+  @ApiOperation({ summary: '카테고리+항목 목록 (C1)' })
   @ApiOkResponse({ type: ChecklistCategoryListDto })
-  list(): ChecklistCategoryListDto {
-    return { items: stubCategories() };
+  async list(@CurrentUser() user: AuthUser): Promise<ChecklistCategoryListDto> {
+    return { items: await this.checklist.list(user.id) };
   }
 
   @Post()

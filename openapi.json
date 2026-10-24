@@ -245,7 +245,6 @@
     },
     "/api/v1/checklist/categories": {
       "get": {
-        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "ChecklistController_list",
         "parameters": [],
         "responses": {
@@ -270,7 +269,7 @@
             }
           }
         },
-        "summary": "카테고리+항목 목록 (C1) [STUB]",
+        "summary": "카테고리+항목 목록 (C1)",
         "tags": [
           "checklist"
         ]
@@ -444,7 +443,6 @@
     },
     "/api/v1/entries": {
       "get": {
-        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "EntriesController_list",
         "parameters": [
           {
@@ -501,7 +499,7 @@
             }
           }
         },
-        "summary": "캘린더용 기간 목록 (E1) [STUB]",
+        "summary": "캘린더용 기간 목록 (E1) — 월간·연간 공용, 최대 366일",
         "tags": [
           "entries"
         ]
@@ -509,7 +507,6 @@
     },
     "/api/v1/entries/{date}": {
       "get": {
-        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "EntriesController_get",
         "parameters": [
           {
@@ -564,13 +561,13 @@
             }
           }
         },
-        "summary": "일기 상세 (E2) [STUB]",
+        "summary": "일기 상세 (E2)",
         "tags": [
           "entries"
         ]
       },
       "put": {
-        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "note: 생략하면 유지, null이면 삭제. checkedItemIds: 보내면 전체 교체.",
         "operationId": "EntriesController_upsert",
         "parameters": [
           {
@@ -595,6 +592,16 @@
         },
         "responses": {
           "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDto"
+                }
+              }
+            }
+          },
+          "201": {
             "description": "",
             "content": {
               "application/json": {
@@ -635,13 +642,12 @@
             }
           }
         },
-        "summary": "일기 생성/입력 저장 (E3) — 없으면 201, 있으면 200 [STUB]",
+        "summary": "일기 생성/입력 저장 (E3) — 없으면 201, 있으면 200",
         "tags": [
           "entries"
         ]
       },
       "delete": {
-        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "EntriesController_remove",
         "parameters": [
           {
@@ -689,7 +695,7 @@
             }
           }
         },
-        "summary": "일기 삭제 (E4) — 사진·AI 색인 포함 [STUB]",
+        "summary": "일기 삭제 (E4) — AI 색인을 먼저 지우고, 실패하면 503",
         "tags": [
           "entries"
         ]

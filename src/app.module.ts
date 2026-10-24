@@ -8,6 +8,7 @@ import { EntriesModule } from './entries/entries.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PastSelfModule } from './past-self/past-self.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { StorageModule } from './storage/storage.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module.js';
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     PrismaModule,
     AiClientModule,
+    StorageModule,
     AuthModule,
     UsersModule,
     ChecklistModule,
