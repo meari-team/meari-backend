@@ -35,6 +35,8 @@ const ai = {
   failWith: null as Error | null,
   draft: '오늘은 민지와 카페에 갔다.',
   analyzeImages: () => Promise.resolve(ANALYSIS),
+  indexDiary: () => Promise.resolve({ indexed: true }),
+  deleteDiaryIndex: () => Promise.resolve({ indexed: false }),
   clarify() {
     return Promise.resolve(this.clarifyResult);
   },
