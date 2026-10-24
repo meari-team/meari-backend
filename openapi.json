@@ -1652,7 +1652,7 @@
             }
           }
         },
-        "summary": "일정 수정 (S4) — time: null이면 종일로",
+        "summary": "일정 수정 (S4) — time: null이면 종일로, completed로 완료 체크",
         "tags": [
           "schedules"
         ]
@@ -2844,6 +2844,10 @@
             "example": "14:00",
             "description": "HH:mm, 없으면 종일"
           },
+          "completed": {
+            "type": "boolean",
+            "description": "완료 체크 여부 (캘린더 체크박스)"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -2854,6 +2858,7 @@
           "date",
           "title",
           "time",
+          "completed",
           "createdAt"
         ]
       },
@@ -2915,6 +2920,10 @@
             "nullable": true,
             "example": "14:00",
             "description": "null이면 시간을 지운다(종일)"
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "완료 체크 토글"
           }
         }
       },
