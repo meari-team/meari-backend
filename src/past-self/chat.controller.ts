@@ -1,3 +1,4 @@
+import { RateLimit } from '../rate-limit/rate-limit.js';
 import {
   Body,
   Controller,
@@ -74,6 +75,7 @@ export class ChatController {
     return this.pastSelf.messages(user.id, id, query.cursor, query.limit);
   }
 
+  @RateLimit('chat')
   @Post(':id/messages')
   @ApiOperation({
     summary: '메시지 전송 → 과거의 나 응답 (H5)',

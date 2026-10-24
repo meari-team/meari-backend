@@ -1,3 +1,4 @@
+import { RateLimit } from '../rate-limit/rate-limit.js';
 import {
   Body,
   Controller,
@@ -43,6 +44,7 @@ const AI_ERRORS = {
 export class GenerationController {
   constructor(private readonly generation: GenerationService) {}
 
+  @RateLimit('ai')
   @Post('analyze')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -80,6 +82,7 @@ export class GenerationController {
     return this.generation.answer(user.id, date, dto);
   }
 
+  @RateLimit('ai')
   @Post('generate')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
