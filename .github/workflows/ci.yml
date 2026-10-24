@@ -39,6 +39,10 @@ jobs:
       - run: npm test
       - run: npm run test:e2e
       - run: npm run build
+      - name: openapi.json이 코드와 일치하는지 확인
+        run: |
+          node dist/scripts/export-openapi.js
+          git diff --exit-code openapi.json || (echo "openapi.json이 오래됐습니다. npm run openapi:export 후 커밋하세요." && exit 1)
 
   gitleaks:
     runs-on: ubuntu-latest

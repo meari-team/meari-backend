@@ -1,0 +1,2759 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {}
+        ],
+        "summary": "헬스체크 (S1) — prefix 없음",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "operationId": "AuthController_signup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "EMAIL_TAKEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ],
+        "summary": "회원가입 (A1) — 기본 체크리스트 생성",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CREDENTIALS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {}
+        ],
+        "summary": "로그인 (A2)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "UsersController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "내 정보 (U1)",
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "UsersController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "닉네임·문체 변경 (U2, P1) [STUB]",
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "description": "목 응답을 돌려준다. MEA-19에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "UsersController_deleteMe",
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_INDEX_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "회원 탈퇴 (U3) — 실제로 삭제하지 않음 [STUB]",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/checklist/categories": {
+      "get": {
+        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChecklistController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistCategoryListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "카테고리+항목 목록 (C1) [STUB]",
+        "tags": [
+          "checklist"
+        ]
+      },
+      "post": {
+        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChecklistController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistCategoryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "카테고리 추가 (C2, P1) [STUB]",
+        "tags": [
+          "checklist"
+        ]
+      }
+    },
+    "/api/v1/checklist/categories/{id}": {
+      "patch": {
+        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChecklistController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChecklistCategoryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CATEGORY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "카테고리 수정 (C3, P1) [STUB]",
+        "tags": [
+          "checklist"
+        ]
+      },
+      "delete": {
+        "description": "목 응답을 돌려준다. MEA-후속에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChecklistController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CATEGORY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "카테고리 삭제 (C4, P1) [STUB]",
+        "tags": [
+          "checklist"
+        ]
+      }
+    },
+    "/api/v1/entries": {
+      "get": {
+        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "EntriesController_list",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "description": "from부터 최대 366일",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntrySummaryListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "캘린더용 기간 목록 (E1) [STUB]",
+        "tags": [
+          "entries"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}": {
+      "get": {
+        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "EntriesController_get",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DATE_IN_FUTURE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "일기 상세 (E2) [STUB]",
+        "tags": [
+          "entries"
+        ]
+      },
+      "put": {
+        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "EntriesController_upsert",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertEntryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DATE_IN_FUTURE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "일기 생성/입력 저장 (E3) — 없으면 201, 있으면 200 [STUB]",
+        "tags": [
+          "entries"
+        ]
+      },
+      "delete": {
+        "description": "목 응답을 돌려준다. MEA-7에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "EntriesController_remove",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_INDEX_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "일기 삭제 (E4) — 사진·AI 색인 포함 [STUB]",
+        "tags": [
+          "entries"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}/photos": {
+      "post": {
+        "description": "목 응답을 돌려준다. MEA-8에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "PhotosController_upload",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadPhotosDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "FILE_TOO_LARGE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "UNSUPPORTED_MEDIA_TYPE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "PHOTO_LIMIT_EXCEEDED | DATE_IN_FUTURE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "사진 업로드 (F1) — multipart, 최대 3장 [STUB]",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}/photos/{photoId}": {
+      "patch": {
+        "description": "목 응답을 돌려준다. MEA-8에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "PhotosController_update",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          },
+          {
+            "name": "photoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePhotoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PHOTO_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "캡션·순서 변경 (F2) [STUB]",
+        "tags": [
+          "photos"
+        ]
+      },
+      "delete": {
+        "description": "목 응답을 돌려준다. MEA-8에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "PhotosController_remove",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          },
+          {
+            "name": "photoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PHOTO_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "사진 삭제 (F3) [STUB]",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}/analyze": {
+      "post": {
+        "description": "목 응답을 돌려준다. MEA-10에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "GenerationController_analyze",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_ENTRY_STATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "PHOTO_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI_UPSTREAM_ERROR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "AI_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "사진 분석 + 추가 질문 (G1) [STUB]",
+        "tags": [
+          "generation"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}/answers": {
+      "put": {
+        "description": "목 응답을 돌려준다. MEA-10에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "GenerationController_answer",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_ENTRY_STATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "질문 답변/건너뛰기 (G2) [STUB]",
+        "tags": [
+          "generation"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}/generate": {
+      "post": {
+        "description": "목 응답을 돌려준다. MEA-11에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "GenerationController_generate",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_ENTRY_STATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "PHOTO_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI_UPSTREAM_ERROR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "AI_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "AI 일기 초안 생성 (G3) [STUB]",
+        "tags": [
+          "generation"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}/confirm": {
+      "post": {
+        "description": "목 응답을 돌려준다. MEA-11에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "GenerationController_confirm",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_ENTRY_STATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "최종본 확정 → AI 색인 (G4) [STUB]",
+        "tags": [
+          "generation"
+        ]
+      }
+    },
+    "/api/v1/entries/{date}/memory": {
+      "patch": {
+        "description": "목 응답을 돌려준다. MEA-23에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "GenerationController_updateMemory",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_INDEX_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "기억에서 제외/복원 (G5, P1) [STUB]",
+        "tags": [
+          "generation"
+        ]
+      }
+    },
+    "/api/v1/past-self/availability": {
+      "get": {
+        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "PastSelfController_availability",
+        "parameters": [
+          {
+            "name": "anchorDate",
+            "required": false,
+            "in": "query",
+            "description": "생략하면 프리셋 전체",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AvailabilityDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AvailabilityPresetListDto"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DATE_IN_FUTURE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "시점 확인 (H1) — anchorDate 생략 시 프리셋 전체 [STUB]",
+        "tags": [
+          "past-self"
+        ]
+      }
+    },
+    "/api/v1/chat/sessions": {
+      "post": {
+        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChatController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSessionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DATE_IN_FUTURE | NOT_ENOUGH_RECORDS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "과거의 나 세션 생성 (H2) [STUB]",
+        "tags": [
+          "chat"
+        ]
+      },
+      "get": {
+        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChatController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSessionListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "내 세션 목록 (H3) [STUB]",
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/v1/chat/sessions/{id}/messages": {
+      "get": {
+        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChatController_messages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 30,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessagePageDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SESSION_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "세션 메시지 목록 (H4) [STUB]",
+        "tags": [
+          "chat"
+        ]
+      },
+      "post": {
+        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "operationId": "ChatController_send",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendMessageResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SESSION_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "SESSION_MESSAGE_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "TOO_MANY_REQUESTS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI_UPSTREAM_ERROR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "AI_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "메시지 전송 → 과거의 나 응답 (H5) [STUB]",
+        "tags": [
+          "chat"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "메아리 API",
+    "description": "앱 ↔ NestJS API. 설계 문서: meari-docs/api.md. `[STUB]` 표시 엔드포인트는 목 응답.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "SignupDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 64,
+            "description": "영문과 숫자를 각각 1자 이상"
+          },
+          "nickname": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "nickname"
+        ]
+      },
+      "DiaryStyle": {
+        "type": "string",
+        "enum": [
+          "PLAIN",
+          "EMOTIONAL",
+          "SUMMARY"
+        ]
+      },
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "diaryStyle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DiaryStyle"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "nickname",
+          "diaryStyle",
+          "createdAt"
+        ]
+      },
+      "AuthResultDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Bearer 토큰 (7일)"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "user"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UpdateMeDto": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "diaryStyle": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DiaryStyle"
+              }
+            ]
+          }
+        }
+      },
+      "ChecklistItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "sortOrder"
+        ]
+      },
+      "ChecklistCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "example": "#4CAF50"
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "sortOrder",
+          "items"
+        ]
+      },
+      "ChecklistCategoryListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistCategoryDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "color": {
+            "type": "string",
+            "example": "#4CAF50"
+          },
+          "items": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "color",
+          "items"
+        ]
+      },
+      "CategoryItemInputDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "있으면 기존 항목 유지"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "color": {
+            "type": "string",
+            "example": "#4CAF50"
+          },
+          "items": {
+            "maxItems": 10,
+            "description": "전체 교체",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryItemInputDto"
+            }
+          }
+        }
+      },
+      "EntryStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "QUESTIONING",
+          "READY",
+          "GENERATED",
+          "CONFIRMED"
+        ]
+      },
+      "EntrySummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-24"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntryStatus"
+              }
+            ]
+          },
+          "coverPhotoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true,
+            "description": "P1 하루 요약"
+          },
+          "categoryColors": {
+            "description": "그날 체크된 카테고리 색",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "status",
+          "coverPhotoUrl",
+          "summary",
+          "categoryColors"
+        ]
+      },
+      "EntrySummaryListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntrySummaryDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "PhotoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string",
+            "description": "서명 URL, 1시간 만료"
+          },
+          "width": {
+            "type": "number",
+            "nullable": true
+          },
+          "height": {
+            "type": "number",
+            "nullable": true
+          },
+          "caption": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "width",
+          "height",
+          "caption",
+          "sortOrder"
+        ]
+      },
+      "QuestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "question": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "description": "왜 묻는지 (화면 보조 문구)"
+          },
+          "options": {
+            "nullable": true,
+            "description": "보기. AI-2 전엔 null → 자유 입력",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "answer": {
+            "type": "string",
+            "nullable": true
+          },
+          "skipped": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "question",
+          "reason",
+          "options",
+          "answer",
+          "skipped"
+        ]
+      },
+      "AiIndexStatus": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "PENDING",
+          "INDEXED",
+          "FAILED"
+        ]
+      },
+      "EntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-24"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntryStatus"
+              }
+            ]
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoDto"
+            }
+          },
+          "coverPhotoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "checkedItemIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionDto"
+            }
+          },
+          "aiDraft": {
+            "type": "string",
+            "nullable": true
+          },
+          "aiUncertain": {
+            "description": "하이라이트할 추정 문장. AI-3 전엔 []",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "finalContent": {
+            "type": "string",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "excludedFromMemory": {
+            "type": "boolean"
+          },
+          "aiIndexStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AiIndexStatus"
+              }
+            ]
+          },
+          "confirmedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "status",
+          "note",
+          "photos",
+          "coverPhotoId",
+          "checkedItemIds",
+          "questions",
+          "aiDraft",
+          "aiUncertain",
+          "finalContent",
+          "summary",
+          "excludedFromMemory",
+          "aiIndexStatus",
+          "confirmedAt",
+          "updatedAt"
+        ]
+      },
+      "UpsertEntryDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200
+          },
+          "checkedItemIds": {
+            "description": "본인 체크리스트 항목 ID",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "UploadPhotosDto": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "maxItems": 3,
+            "description": "jpeg/png/webp, 장당 4MB"
+          },
+          "captions": {
+            "type": "string",
+            "description": "files와 같은 순서의 캡션 배열(JSON 문자열)",
+            "example": "[\"카페에서\", \"\"]"
+          }
+        },
+        "required": [
+          "files"
+        ]
+      },
+      "PhotoListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdatePhotoDto": {
+        "type": "object",
+        "properties": {
+          "caption": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          }
+        }
+      },
+      "AnalyzeResultDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntryStatus"
+              }
+            ]
+          },
+          "questions": {
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionDto"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "questions"
+        ]
+      },
+      "AnswerInputDto": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "answer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "skipped": {
+            "type": "boolean",
+            "description": "true면 건너뛰기 (answer와 동시 불가)"
+          }
+        },
+        "required": [
+          "questionId"
+        ]
+      },
+      "AnswersDto": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnswerInputDto"
+            }
+          }
+        },
+        "required": [
+          "answers"
+        ]
+      },
+      "GenerateDto": {
+        "type": "object",
+        "properties": {
+          "skipRemainingQuestions": {
+            "type": "boolean",
+            "description": "\"그냥 생성\" — 남은 질문을 건너뛴다"
+          }
+        }
+      },
+      "GenerateResultDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntryStatus"
+              }
+            ]
+          },
+          "aiDraft": {
+            "type": "string"
+          },
+          "aiUncertain": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "coverPhotoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "aiDraft",
+          "aiUncertain",
+          "coverPhotoId"
+        ]
+      },
+      "ConfirmDto": {
+        "type": "object",
+        "properties": {
+          "finalContent": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "finalContent"
+        ]
+      },
+      "UpdateMemoryDto": {
+        "type": "object",
+        "properties": {
+          "excluded": {
+            "type": "boolean",
+            "description": "true면 기억에서 제외"
+          }
+        },
+        "required": [
+          "excluded"
+        ]
+      },
+      "AvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "anchorDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "recordCount": {
+            "type": "number",
+            "description": "T 이전 확정·미제외 일기 수"
+          },
+          "firstRecordDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "requiredCount": {
+            "type": "number",
+            "example": 7
+          }
+        },
+        "required": [
+          "anchorDate",
+          "available",
+          "recordCount",
+          "firstRecordDate",
+          "requiredCount"
+        ]
+      },
+      "Preset": {
+        "type": "string",
+        "enum": [
+          "1W",
+          "1M",
+          "3M",
+          "6M",
+          "1Y"
+        ]
+      },
+      "AvailabilityPresetDto": {
+        "type": "object",
+        "properties": {
+          "preset": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Preset"
+              }
+            ]
+          },
+          "anchorDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "recordCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "preset",
+          "anchorDate",
+          "available",
+          "recordCount"
+        ]
+      },
+      "AvailabilityPresetListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailabilityPresetDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateSessionDto": {
+        "type": "object",
+        "properties": {
+          "anchorDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-09-24"
+          }
+        },
+        "required": [
+          "anchorDate"
+        ]
+      },
+      "ChatSessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "anchorDate": {
+            "type": "string",
+            "format": "date",
+            "description": "기준 시점 T"
+          },
+          "messageCount": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastMessagePreview": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "anchorDate",
+          "messageCount",
+          "createdAt",
+          "lastMessageAt",
+          "lastMessagePreview"
+        ]
+      },
+      "ChatSessionListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatSessionDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ChatRole": {
+        "type": "string",
+        "enum": [
+          "USER",
+          "ASSISTANT"
+        ]
+      },
+      "CitationDto": {
+        "type": "object",
+        "properties": {
+          "entryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "entryId",
+          "date"
+        ]
+      },
+      "ChatFlag": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "NO_EVIDENCE",
+          "LEAK_BLOCKED",
+          "CRISIS"
+        ]
+      },
+      "ChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatRole"
+              }
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "citations": {
+            "description": "ASSISTANT만. 서버 재검증 통과분",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CitationDto"
+            }
+          },
+          "flag": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatFlag"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "content",
+          "citations",
+          "flag",
+          "createdAt"
+        ]
+      },
+      "ChatMessagePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "오래된 순",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "SendMessageResultDto": {
+        "type": "object",
+        "properties": {
+          "userMessage": {
+            "$ref": "#/components/schemas/ChatMessageDto"
+          },
+          "assistantMessage": {
+            "$ref": "#/components/schemas/ChatMessageDto"
+          }
+        },
+        "required": [
+          "userMessage",
+          "assistantMessage"
+        ]
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "VALIDATION_FAILED",
+          "UNAUTHORIZED",
+          "INVALID_CREDENTIALS",
+          "NOT_FOUND",
+          "ENTRY_NOT_FOUND",
+          "PHOTO_NOT_FOUND",
+          "SESSION_NOT_FOUND",
+          "CATEGORY_NOT_FOUND",
+          "EMAIL_TAKEN",
+          "INVALID_ENTRY_STATE",
+          "FILE_TOO_LARGE",
+          "UNSUPPORTED_MEDIA_TYPE",
+          "DATE_IN_FUTURE",
+          "PHOTO_LIMIT_EXCEEDED",
+          "PHOTO_REQUIRED",
+          "NOT_ENOUGH_RECORDS",
+          "SESSION_MESSAGE_LIMIT",
+          "TOO_MANY_REQUESTS",
+          "AI_UPSTREAM_ERROR",
+          "AI_INDEX_UNAVAILABLE",
+          "AI_TIMEOUT",
+          "INTERNAL_ERROR"
+        ]
+      },
+      "ErrorBodyDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ErrorCode"
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "nullable": true,
+            "description": "필드별 사유 등 추가 정보"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBodyDto"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
+}

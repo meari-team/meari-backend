@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module.js';
+import { ChecklistModule } from './checklist/checklist.module.js';
 import { validateEnv } from './config/env.js';
+import { EntriesModule } from './entries/entries.module.js';
 import { HealthController } from './health/health.controller.js';
+import { PastSelfModule } from './past-self/past-self.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -12,6 +15,9 @@ import { UsersModule } from './users/users.module.js';
     PrismaModule,
     AuthModule,
     UsersModule,
+    ChecklistModule,
+    EntriesModule,
+    PastSelfModule,
   ],
   controllers: [HealthController],
 })
