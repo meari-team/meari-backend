@@ -8,10 +8,20 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  CurrentUser,
+  type AuthUser,
+} from '../common/decorators/current-user.decorator.js';
+import { GenerationService } from '../generation/generation.service.js';
 import { ParseDatePipe } from '../common/pipes/parse-date.pipe.js';
 import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
-import { STUB_DRAFT, stubEntry, stubQuestions } from '../stubs/fixtures.js';
+import { STUB_DRAFT, stubEntry } from '../stubs/fixtures.js';
 import {
   AnalyzeResultDto,
   AnswersDto,
@@ -32,39 +42,43 @@ const AI_ERRORS = {
 @ApiErrors({ 401: ['UNAUTHORIZED'], 404: ['ENTRY_NOT_FOUND'] })
 @Controller('entries/:date')
 export class GenerationController {
+  constructor(private readonly generation: GenerationService) {}
+
   @Post('analyze')
   @HttpCode(HttpStatus.OK)
-  @ApiStub('사진 분석 + 추가 질문 (G1)', 'MEA-10')
+  @ApiOperation({
+    summary: '사진 분석 + 추가 질문 (G1)',
+    description:
+      '사진 분석 결과는 저장해 두고 재사용한다(사진이 바뀌면 다시 분석). 질문은 매번 새로 만든다(최대 2개). ' +
+      '질문이 있으면 QUESTIONING, 없으면 READY. 분석·질문을 합쳐 수십 초 걸릴 수 있다.',
+  })
   @ApiOkResponse({ type: AnalyzeResultDto })
   @ApiErrors({
     409: ['INVALID_ENTRY_STATE'],
     422: ['PHOTO_REQUIRED'],
     ...AI_ERRORS,
   })
-  analyze(@Param('date', ParseDatePipe) _date: string): AnalyzeResultDto {
-    return { status: 'QUESTIONING', questions: stubQuestions() };
+  analyze(
+    @CurrentUser() user: AuthUser,
+    @Param('date', ParseDatePipe) date: string,
+  ): Promise<AnalyzeResultDto> {
+    return this.generation.analyze(user.id, date);
   }
 
   @Put('answers')
-  @ApiStub('질문 답변/건너뛰기 (G2)', 'MEA-10')
+  @ApiOperation({
+    summary: '질문 답변/건너뛰기 (G2)',
+    description:
+      '모든 질문이 답변되거나 건너뛰어지면 READY. answer와 skipped: true는 함께 보낼 수 없다.',
+  })
   @ApiOkResponse({ type: AnalyzeResultDto })
   @ApiErrors({ 400: ['VALIDATION_FAILED'], 409: ['INVALID_ENTRY_STATE'] })
   answer(
-    @Param('date', ParseDatePipe) _date: string,
+    @CurrentUser() user: AuthUser,
+    @Param('date', ParseDatePipe) date: string,
     @Body() dto: AnswersDto,
-  ): AnalyzeResultDto {
-    const questions = stubQuestions().map((q) => {
-      const a = dto.answers.find((x) => x.questionId === q.id);
-      return a
-        ? {
-            ...q,
-            answer: a.skipped ? null : (a.answer ?? null),
-            skipped: !!a.skipped,
-          }
-        : q;
-    });
-    const done = questions.every((q) => q.answer !== null || q.skipped);
-    return { status: done ? 'READY' : 'QUESTIONING', questions };
+  ): Promise<AnalyzeResultDto> {
+    return this.generation.answer(user.id, date, dto);
   }
 
   @Post('generate')

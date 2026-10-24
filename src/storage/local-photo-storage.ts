@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, resolve, sep } from 'node:path';
 import { PhotoStorage } from './photo-storage.js';
 
@@ -37,6 +37,10 @@ export class LocalPhotoStorage extends PhotoStorage {
     const path = this.pathOf(storageKey);
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, data);
+  }
+
+  read(storageKey: string): Promise<Buffer> {
+    return readFile(this.pathOf(storageKey));
   }
 
   signedUrl(storageKey: string, now = Date.now()): Promise<string | null> {

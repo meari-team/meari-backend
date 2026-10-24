@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import type { EntryQuestion, Prisma } from '@prisma/client';
 import { fromDbDate } from '../common/dates.js';
 import type { PhotoStorage } from '../storage/photo-storage.js';
 import type {
@@ -44,6 +44,17 @@ const nullableStringArray = (
   value: Prisma.JsonValue | null,
 ): string[] | null => (Array.isArray(value) ? stringArray(value) : null);
 
+export function toQuestionDto(q: EntryQuestion): QuestionDto {
+  return {
+    id: q.id,
+    question: q.question,
+    reason: q.reason,
+    options: nullableStringArray(q.options),
+    answer: q.answer,
+    skipped: q.skipped,
+  };
+}
+
 export async function toEntryDto(
   entry: EntryWithDetail,
   storage: PhotoStorage,
@@ -58,14 +69,7 @@ export async function toEntryDto(
       sortOrder: p.sortOrder,
     })),
   );
-  const questions: QuestionDto[] = entry.questions.map((q) => ({
-    id: q.id,
-    question: q.question,
-    reason: q.reason,
-    options: nullableStringArray(q.options),
-    answer: q.answer,
-    skipped: q.skipped,
-  }));
+  const questions = entry.questions.map(toQuestionDto);
 
   return {
     id: entry.id,
