@@ -112,10 +112,17 @@ export class ChatMessageDto {
 }
 
 export class ChatMessagePageDto {
-  @ApiProperty({ type: [ChatMessageDto], description: '오래된 순' })
+  @ApiProperty({
+    type: [ChatMessageDto],
+    description: '오래된 순. cursor 없으면 가장 최근 limit개',
+  })
   items: ChatMessageDto[];
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: '더 이전 메시지를 받으려면 이 값을 cursor로 (없으면 null)',
+  })
   nextCursor: string | null;
 }
 
@@ -143,7 +150,10 @@ export class CreateSessionDto {
 }
 
 export class MessagesQueryDto {
-  @ApiPropertyOptional({ format: 'uuid' })
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: '이 메시지보다 이전 메시지를 받는다 (이전 응답의 nextCursor)',
+  })
   @IsOptional()
   @IsUUID()
   cursor?: string;

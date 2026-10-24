@@ -1381,7 +1381,7 @@
     },
     "/api/v1/past-self/availability": {
       "get": {
-        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "anchorDate를 주면 그 시점까지의 기록 수·첫 기록일, 생략하면 프리셋(1W·1M·3M·6M·1Y) 전체. 기록 = 확정됐고 기억에서 제외되지 않은 일기. 7일 이상이어야 대화 가능.",
         "operationId": "PastSelfController_availability",
         "parameters": [
           {
@@ -1444,7 +1444,7 @@
             }
           }
         },
-        "summary": "시점 확인 (H1) — anchorDate 생략 시 프리셋 전체 [STUB]",
+        "summary": "시점 확인 (H1)",
         "tags": [
           "past-self"
         ]
@@ -1452,7 +1452,6 @@
     },
     "/api/v1/chat/sessions": {
       "post": {
-        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "ChatController_create",
         "parameters": [],
         "requestBody": {
@@ -1507,13 +1506,12 @@
             }
           }
         },
-        "summary": "과거의 나 세션 생성 (H2) [STUB]",
+        "summary": "과거의 나 세션 생성 (H2) — 그 시점까지 기록 7일 이상",
         "tags": [
           "chat"
         ]
       },
       "get": {
-        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
         "operationId": "ChatController_list",
         "parameters": [],
         "responses": {
@@ -1538,7 +1536,7 @@
             }
           }
         },
-        "summary": "내 세션 목록 (H3) [STUB]",
+        "summary": "내 세션 목록 (H3) — 최근 대화순, 최대 50개",
         "tags": [
           "chat"
         ]
@@ -1546,7 +1544,7 @@
     },
     "/api/v1/chat/sessions/{id}/messages": {
       "get": {
-        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "cursor 없으면 가장 최근 limit개, 있으면 그 이전 limit개. 응답은 오래된 순.",
         "operationId": "ChatController_messages",
         "parameters": [
           {
@@ -1561,6 +1559,7 @@
             "name": "cursor",
             "required": false,
             "in": "query",
+            "description": "이 메시지보다 이전 메시지를 받는다 (이전 응답의 nextCursor)",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -1589,6 +1588,16 @@
               }
             }
           },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
           "401": {
             "description": "UNAUTHORIZED",
             "content": {
@@ -1610,13 +1619,13 @@
             }
           }
         },
-        "summary": "세션 메시지 목록 (H4) [STUB]",
+        "summary": "세션 메시지 목록 (H4)",
         "tags": [
           "chat"
         ]
       },
       "post": {
-        "description": "목 응답을 돌려준다. MEA-15에서 실제 구현으로 교체한다. 응답 헤더 `X-Meari-Stub: true`",
+        "description": "AI가 고른 근거는 서버가 다시 검증한다(본인·확정·미제외·T 이전만). 근거가 없으면 flag NO_EVIDENCE. AI가 실패하면 메시지를 저장하지 않는다. 세션당 사용자 메시지 30개까지.",
         "operationId": "ChatController_send",
         "parameters": [
           {
@@ -1689,16 +1698,6 @@
               }
             }
           },
-          "429": {
-            "description": "TOO_MANY_REQUESTS",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponseDto"
-                }
-              }
-            }
-          },
           "502": {
             "description": "AI_UPSTREAM_ERROR",
             "content": {
@@ -1720,7 +1719,7 @@
             }
           }
         },
-        "summary": "메시지 전송 → 과거의 나 응답 (H5) [STUB]",
+        "summary": "메시지 전송 → 과거의 나 응답 (H5)",
         "tags": [
           "chat"
         ]
@@ -2653,7 +2652,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "오래된 순",
+            "description": "오래된 순. cursor 없으면 가장 최근 limit개",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ChatMessageDto"
@@ -2661,7 +2660,8 @@
           },
           "nextCursor": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "더 이전 메시지를 받으려면 이 값을 cursor로 (없으면 null)"
           }
         },
         "required": [

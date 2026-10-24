@@ -1,39 +1,36 @@
-import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import {
   ApiExtraModels,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { AppException } from '../common/errors/app.exception.js';
-import { todayKst } from '../common/pipes/parse-date.pipe.js';
-import { ApiErrors, ApiStub } from '../common/swagger/api-docs.js';
+import {
+  CurrentUser,
+  type AuthUser,
+} from '../common/decorators/current-user.decorator.js';
+import { ApiErrors } from '../common/swagger/api-docs.js';
 import {
   AvailabilityDto,
   AvailabilityPresetListDto,
   AvailabilityQueryDto,
-  PRESETS,
 } from './past-self.dto.js';
-import { presetAnchorDate } from './presets.js';
-
-export const REQUIRED_RECORDS = 7;
-
-export function assertNotFuture(date: string) {
-  if (date > todayKst()) {
-    throw new AppException(
-      'DATE_IN_FUTURE',
-      HttpStatus.UNPROCESSABLE_ENTITY,
-      '오늘 이후 날짜는 고를 수 없어요.',
-    );
-  }
-}
+import { PastSelfService } from './past-self.service.js';
 
 @ApiTags('past-self')
 @ApiErrors({ 401: ['UNAUTHORIZED'] })
 @Controller('past-self')
 export class PastSelfController {
+  constructor(private readonly pastSelf: PastSelfService) {}
+
   @Get('availability')
-  @ApiStub('시점 확인 (H1) — anchorDate 생략 시 프리셋 전체', 'MEA-15')
+  @ApiOperation({
+    summary: '시점 확인 (H1)',
+    description:
+      'anchorDate를 주면 그 시점까지의 기록 수·첫 기록일, 생략하면 프리셋(1W·1M·3M·6M·1Y) 전체. ' +
+      '기록 = 확정됐고 기억에서 제외되지 않은 일기. 7일 이상이어야 대화 가능.',
+  })
   @ApiExtraModels(AvailabilityDto, AvailabilityPresetListDto)
   @ApiOkResponse({
     schema: {
@@ -44,28 +41,12 @@ export class PastSelfController {
     },
   })
   @ApiErrors({ 400: ['VALIDATION_FAILED'], 422: ['DATE_IN_FUTURE'] })
-  availability(
+  async availability(
+    @CurrentUser() user: AuthUser,
     @Query() { anchorDate }: AvailabilityQueryDto,
-  ): AvailabilityDto | AvailabilityPresetListDto {
-    if (anchorDate) {
-      assertNotFuture(anchorDate);
-      return {
-        anchorDate,
-        available: true,
-        recordCount: 62,
-        firstRecordDate: '2026-07-01',
-        requiredCount: REQUIRED_RECORDS,
-      };
-    }
-    const today = todayKst();
-    const counts = [85, 62, 24, 0, 0];
-    return {
-      items: PRESETS.map((preset, i) => ({
-        preset,
-        anchorDate: presetAnchorDate(preset, today),
-        available: counts[i] >= REQUIRED_RECORDS,
-        recordCount: counts[i],
-      })),
-    };
+  ): Promise<AvailabilityDto | AvailabilityPresetListDto> {
+    return anchorDate
+      ? this.pastSelf.availability(user.id, anchorDate)
+      : { items: await this.pastSelf.presets(user.id) };
   }
 }
