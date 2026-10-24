@@ -502,6 +502,72 @@
         ]
       }
     },
+    "/api/v1/entries/feed": {
+      "get": {
+        "description": "상태 무관(작성 중 포함). before가 있으면 그 날짜 미만만. 다음 페이지는 nextBefore로.",
+        "operationId": "EntriesController_feed",
+        "parameters": [
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "이 날짜 미만(제외)만. 이전 응답의 nextBefore",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryFeedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "전체 일기 목록 (E5) — 날짜 내림차순, before 커서",
+        "tags": [
+          "entries"
+        ]
+      }
+    },
     "/api/v1/entries/{date}": {
       "get": {
         "operationId": "EntriesController_get",
@@ -2316,6 +2382,95 @@
           "items"
         ]
       },
+      "AiIndexStatus": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "PENDING",
+          "INDEXED",
+          "FAILED"
+        ]
+      },
+      "EntryFeedItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-24"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntryStatus"
+              }
+            ]
+          },
+          "coverPhotoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "대표 사진, 없으면 첫 사진 (서명 URL)"
+          },
+          "photoCount": {
+            "type": "number"
+          },
+          "excerpt": {
+            "type": "string",
+            "nullable": true,
+            "description": "확정본 → AI 초안 → 한 줄 설명 중 처음 비어 있지 않은 것. 공백 정리, 120자 초과 시 120자 + …"
+          },
+          "categoryColors": {
+            "description": "그날 체크된 카테고리 색",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "aiIndexStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AiIndexStatus"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "status",
+          "coverPhotoUrl",
+          "photoCount",
+          "excerpt",
+          "categoryColors",
+          "aiIndexStatus"
+        ]
+      },
+      "EntryFeedDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "날짜 내림차순",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntryFeedItemDto"
+            }
+          },
+          "nextBefore": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "다음 페이지는 before=이 값으로. 없으면 null"
+          }
+        },
+        "required": [
+          "items",
+          "nextBefore"
+        ]
+      },
       "PhotoDto": {
         "type": "object",
         "properties": {
@@ -2391,15 +2546,6 @@
           "options",
           "answer",
           "skipped"
-        ]
-      },
-      "AiIndexStatus": {
-        "type": "string",
-        "enum": [
-          "NONE",
-          "PENDING",
-          "INDEXED",
-          "FAILED"
         ]
       },
       "EntryDto": {

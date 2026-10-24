@@ -25,11 +25,16 @@ import {
 } from '../common/decorators/current-user.decorator.js';
 import { daysBetween } from '../common/dates.js';
 import { AppException } from '../common/errors/app.exception.js';
-import { ParseDatePipe } from '../common/pipes/parse-date.pipe.js';
+import {
+  isValidDateString,
+  ParseDatePipe,
+} from '../common/pipes/parse-date.pipe.js';
 import { ApiErrors } from '../common/swagger/api-docs.js';
 import {
   EntriesRangeQueryDto,
   EntryDto,
+  EntryFeedDto,
+  EntryFeedQueryDto,
   EntrySummaryListDto,
   UpsertEntryDto,
 } from './entries.dto.js';
@@ -63,6 +68,30 @@ export class EntriesController {
       );
     }
     return { items: await this.entries.listRange(user.id, from, to) };
+  }
+
+  // ⚠️ ':date'보다 먼저 선언해야 'feed'가 날짜 파이프로 가지 않는다
+  @Get('feed')
+  @ApiOperation({
+    summary: '전체 일기 목록 (E5) — 날짜 내림차순, before 커서',
+    description:
+      '상태 무관(작성 중 포함). before가 있으면 그 날짜 미만만. 다음 페이지는 nextBefore로.',
+  })
+  @ApiOkResponse({ type: EntryFeedDto })
+  @ApiErrors({ 400: ['VALIDATION_FAILED'] })
+  feed(
+    @CurrentUser() user: AuthUser,
+    @Query() { before, limit }: EntryFeedQueryDto,
+  ): Promise<EntryFeedDto> {
+    if (before !== undefined && !isValidDateString(before)) {
+      throw new AppException(
+        'VALIDATION_FAILED',
+        HttpStatus.BAD_REQUEST,
+        '날짜는 YYYY-MM-DD 형식이어야 해요.',
+        [{ field: 'before', reasons: ['isDate'] }],
+      );
+    }
+    return this.entries.feed(user.id, before, limit ?? 20);
   }
 
   @Get(':date')

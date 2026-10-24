@@ -3,6 +3,7 @@ import { fromDbDate } from '../common/dates.js';
 import type { PhotoStorage } from '../storage/photo-storage.js';
 import type {
   EntryDto,
+  EntryFeedItemDto,
   EntrySummaryDto,
   PhotoDto,
   QuestionDto,
@@ -106,5 +107,48 @@ export async function toEntrySummaryDto(
     categoryColors: [
       ...new Set(entry.checks.map((c) => c.item.category.color)),
     ],
+  };
+}
+
+const EXCERPT_MAX = 120;
+
+// 목록용 미리보기: 확정본 → AI 초안 → 한 줄 설명 중 처음 비어 있지 않은 것
+export function makeExcerpt(
+  ...candidates: (string | null | undefined)[]
+): string | null {
+  for (const c of candidates) {
+    const text = c?.replace(/\s+/g, ' ').trim();
+    if (text) {
+      return text.length > EXCERPT_MAX
+        ? `${text.slice(0, EXCERPT_MAX)}…`
+        : text;
+    }
+  }
+  return null;
+}
+
+export const entryFeedInclude = {
+  ...entrySummaryInclude,
+  _count: { select: { photos: true } },
+} satisfies Prisma.EntryInclude;
+
+export type EntryWithFeed = Prisma.EntryGetPayload<{
+  include: typeof entryFeedInclude;
+}>;
+
+export async function toEntryFeedItemDto(
+  entry: EntryWithFeed,
+  storage: PhotoStorage,
+): Promise<EntryFeedItemDto> {
+  const summary = await toEntrySummaryDto(entry, storage);
+  return {
+    id: summary.id,
+    date: summary.date,
+    status: summary.status,
+    coverPhotoUrl: summary.coverPhotoUrl,
+    photoCount: entry._count.photos,
+    excerpt: makeExcerpt(entry.finalContent, entry.aiDraft, entry.note),
+    categoryColors: summary.categoryColors,
+    aiIndexStatus: entry.aiIndexStatus,
   };
 }

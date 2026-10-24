@@ -96,6 +96,54 @@ export class EntrySummaryListDto {
   items: EntrySummaryDto[];
 }
 
+export class EntryFeedItemDto {
+  @ApiProperty({ format: 'uuid' })
+  id: string;
+
+  @ApiProperty({ format: 'date', example: '2026-10-24' })
+  date: string;
+
+  @ApiProperty({ enum: EntryStatus, enumName: 'EntryStatus' })
+  status: EntryStatus;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: '대표 사진, 없으면 첫 사진 (서명 URL)',
+  })
+  coverPhotoUrl: string | null;
+
+  @ApiProperty()
+  photoCount: number;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description:
+      '확정본 → AI 초안 → 한 줄 설명 중 처음 비어 있지 않은 것. 공백 정리, 120자 초과 시 120자 + …',
+  })
+  excerpt: string | null;
+
+  @ApiProperty({ type: [String], description: '그날 체크된 카테고리 색' })
+  categoryColors: string[];
+
+  @ApiProperty({ enum: AiIndexStatus, enumName: 'AiIndexStatus' })
+  aiIndexStatus: AiIndexStatus;
+}
+
+export class EntryFeedDto {
+  @ApiProperty({ type: [EntryFeedItemDto], description: '날짜 내림차순' })
+  items: EntryFeedItemDto[];
+
+  @ApiProperty({
+    type: String,
+    format: 'date',
+    nullable: true,
+    description: '다음 페이지는 before=이 값으로. 없으면 null',
+  })
+  nextBefore: string | null;
+}
+
 export class EntryDto {
   @ApiProperty({ format: 'uuid' })
   id: string;
@@ -185,6 +233,25 @@ export class EntriesRangeQueryDto {
   })
   @Matches(DATE_RE)
   to: string;
+}
+
+export class EntryFeedQueryDto {
+  @ApiPropertyOptional({
+    format: 'date',
+    example: '2026-10-24',
+    description: '이 날짜 미만(제외)만. 이전 응답의 nextBefore',
+  })
+  @IsOptional()
+  @Matches(DATE_RE)
+  before?: string;
+
+  @ApiPropertyOptional({ minimum: 1, maximum: 50, default: 20 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit?: number;
 }
 
 export class UpsertEntryDto {
