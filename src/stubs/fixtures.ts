@@ -6,10 +6,6 @@ import type {
   PhotoDto,
   QuestionDto,
 } from '../entries/entries.dto.js';
-import type {
-  ChatMessageDto,
-  ChatSessionDto,
-} from '../past-self/past-self.dto.js';
 
 const NOW = '2026-10-24T03:00:00.000Z';
 const id = (n: number) =>
@@ -114,37 +110,5 @@ export const stubCategories = (): ChecklistCategoryDto[] => [
       { id: id(302), label: '외식', sortOrder: 0 },
       { id: id(304), label: '집밥', sortOrder: 1 },
     ],
-  },
-];
-
-export const stubSession = (anchorDate: string): ChatSessionDto => ({
-  id: id(501),
-  anchorDate,
-  messageCount: 2,
-  createdAt: NOW,
-  lastMessageAt: NOW,
-  lastMessagePreview: '요즘은 인턴 면접 준비가 제일 신경 쓰여.',
-});
-
-export const stubMessages = (): ChatMessageDto[] => [
-  {
-    id: id(601),
-    role: 'USER',
-    content: '너 요즘 제일 신경 쓰는 게 뭐야?',
-    citations: [],
-    flag: 'NONE',
-    createdAt: NOW,
-  },
-  {
-    id: id(602),
-    role: 'ASSISTANT',
-    content:
-      '요즘은 인턴 면접 준비가 제일 신경 쓰여. 어제도 스터디 끝나고 카페에서 자소서를 고쳤거든.',
-    citations: [
-      { entryId: id(1009), date: '2026-09-23' },
-      { entryId: id(1002), date: '2026-09-16' },
-    ],
-    flag: 'NONE',
-    createdAt: NOW,
   },
 ];

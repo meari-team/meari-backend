@@ -37,12 +37,16 @@ describe('Stub endpoints (e2e)', () => {
   };
 
   it('스텁 응답에는 X-Meari-Stub 헤더가 붙는다', async () => {
-    const res = await get('/api/v1/chat/sessions').expect(200);
+    const res = await request(app.getHttpServer())
+      .patch('/api/v1/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nickname: '바뀐 이름' })
+      .expect(200);
     expect(res.headers['x-meari-stub']).toBe('true');
   });
 
   it('스텁도 토큰이 없으면 401', async () => {
-    await request(app.getHttpServer()).get('/api/v1/chat/sessions').expect(401);
+    await request(app.getHttpServer()).patch('/api/v1/me').send({}).expect(401);
   });
 
   it('미래 날짜는 422 DATE_IN_FUTURE', async () => {
