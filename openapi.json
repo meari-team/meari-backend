@@ -242,6 +242,59 @@
         ]
       }
     },
+    "/api/v1/me/password": {
+      "patch": {
+        "description": "지금 비밀번호가 틀리면 400 WRONG_PASSWORD(401 아님 — 앱이 로그아웃하지 않게), 새 비밀번호가 지금과 같으면 400 SAME_PASSWORD. 이미 발급된 토큰은 만료까지 유효하다.",
+        "operationId": "UsersController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "VALIDATION_FAILED | WRONG_PASSWORD | SAME_PASSWORD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "TOO_MANY_REQUESTS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "비밀번호 변경 (U4)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/api/v1/checklist/categories": {
       "get": {
         "operationId": "ChecklistController_list",
@@ -2181,6 +2234,25 @@
           }
         }
       },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 64,
+            "description": "회원가입과 같은 규칙: 영문과 숫자를 각각 1자 이상"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
       "ChecklistItemDto": {
         "type": "object",
         "properties": {
@@ -3216,6 +3288,8 @@
           "CATEGORY_NOT_FOUND",
           "SCHEDULE_NOT_FOUND",
           "EMAIL_TAKEN",
+          "WRONG_PASSWORD",
+          "SAME_PASSWORD",
           "INVALID_ENTRY_STATE",
           "FILE_TOO_LARGE",
           "UNSUPPORTED_MEDIA_TYPE",

@@ -1,10 +1,24 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { compare, hash } from 'bcryptjs';
 import { AiClient } from '../ai-client/ai-client.service.js';
 import { AppException } from '../common/errors/app.exception.js';
 import { MemorySyncService } from '../memory-sync/memory-sync.service.js';
+import { BCRYPT_COST } from '../auth/password-policy.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PhotoStorage } from '../storage/photo-storage.js';
-import { toUserDto, type UpdateMeDto, type UserDto } from './user.dto.js';
+import {
+  toUserDto,
+  type ChangePasswordDto,
+  type UpdateMeDto,
+  type UserDto,
+} from './user.dto.js';
+
+const unauthorized = () =>
+  new AppException(
+    'UNAUTHORIZED',
+    HttpStatus.UNAUTHORIZED,
+    '로그인이 필요해요.',
+  );
 
 @Injectable()
 export class UsersService {
@@ -19,13 +33,7 @@ export class UsersService {
 
   async me(userId: string): Promise<UserDto> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new AppException(
-        'UNAUTHORIZED',
-        HttpStatus.UNAUTHORIZED,
-        '로그인이 필요해요.',
-      );
-    }
+    if (!user) throw unauthorized();
     return toUserDto(user);
   }
 
@@ -39,6 +47,34 @@ export class UsersService {
       },
     });
     return toUserDto(user);
+  }
+
+  // U4: 비밀번호 변경. 지금 비밀번호가 틀리면 400 WRONG_PASSWORD
+  // (401은 앱이 로그아웃으로 처리하므로 쓰지 않는다). 발급된 토큰은 무상태라 만료까지 그대로 유효하다
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true },
+    });
+    if (!user) throw unauthorized();
+    if (!(await compare(dto.currentPassword, user.passwordHash))) {
+      throw new AppException(
+        'WRONG_PASSWORD',
+        HttpStatus.BAD_REQUEST,
+        '지금 비밀번호가 맞지 않아요.',
+      );
+    }
+    if (dto.newPassword === dto.currentPassword) {
+      throw new AppException(
+        'SAME_PASSWORD',
+        HttpStatus.BAD_REQUEST,
+        '지금과 다른 비밀번호를 입력해 주세요.',
+      );
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: await hash(dto.newPassword, BCRYPT_COST) },
+    });
   }
 
   // U3 회원 탈퇴 (ADR-006): AI 기억을 먼저 모두 지우고, 하나라도 실패하면 아무것도 지우지 않는다.
