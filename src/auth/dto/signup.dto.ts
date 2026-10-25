@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsString, Length, Matches, MaxLength } from 'class-validator';
+import { PASSWORD_PATTERN } from '../password-policy.js';
 
 const trim = ({ value }: { value: unknown }) =>
   typeof value === 'string' ? value.trim() : value;
@@ -21,7 +22,7 @@ export class SignupDto {
     description: '영문과 숫자를 각각 1자 이상',
   })
   @IsString()
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d).{8,64}$/)
+  @Matches(PASSWORD_PATTERN)
   password: string;
 
   @ApiProperty({ minLength: 1, maxLength: 20 })

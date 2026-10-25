@@ -8,8 +8,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { toUserDto, type UserDto } from '../users/user.dto.js';
 import type { LoginDto } from './dto/login.dto.js';
 import type { SignupDto } from './dto/signup.dto.js';
-
-const BCRYPT_COST = 10;
+import { BCRYPT_COST } from './password-policy.js';
 
 // 없는 이메일로 로그인해도 비교 시간을 비슷하게 맞춰, 가입 여부가 응답 속도로 드러나지 않게 한다.
 const DUMMY_HASH = hashSync('meari-dummy-password', BCRYPT_COST);

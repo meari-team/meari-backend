@@ -1,7 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DiaryStyle, type User } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+  MaxLength,
+} from 'class-validator';
+import { PASSWORD_PATTERN } from '../auth/password-policy.js';
 
 export class UserDto {
   @ApiProperty({ format: 'uuid' })
@@ -43,4 +51,21 @@ export class UpdateMeDto {
   @IsOptional()
   @IsEnum(DiaryStyle)
   diaryStyle?: DiaryStyle;
+}
+
+export class ChangePasswordDto {
+  // 지금 비밀번호는 규칙을 검사하지 않는다 (규칙이 생기기 전·시연용 계정도 바꿀 수 있게)
+  @ApiProperty({ maxLength: 64 })
+  @IsString()
+  @MaxLength(64)
+  currentPassword: string;
+
+  @ApiProperty({
+    minLength: 8,
+    maxLength: 64,
+    description: '회원가입과 같은 규칙: 영문과 숫자를 각각 1자 이상',
+  })
+  @IsString()
+  @Matches(PASSWORD_PATTERN)
+  newPassword: string;
 }
