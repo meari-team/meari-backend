@@ -26,7 +26,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "openapi:export": "nest build && node dist/scripts/export-openapi.js",
-    "memory:reindex": "node dist/scripts/reindex.js"
+    "memory:reindex": "node dist/scripts/reindex.js",
+    "seed:demo": "node dist/scripts/seed-demo.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
