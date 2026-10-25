@@ -12,8 +12,18 @@ npm ci                 # postinstall에서 prisma generate 실행
 cp .env.example .env   # 값 채우기
 docker compose up -d   # 로컬 DB (또는 Supabase URL 사용)
 npm run db:deploy      # 마이그레이션 적용
+npm run build && npm run seed:demo   # 시연 계정 만들기 (선택, 아래 참고)
 npm run start:dev      # http://localhost:3000
 ```
+
+### 시연 계정 (`npm run seed:demo`)
+
+로그인 `test@test.com` / `test`. 가상 사용자(컴공 3학년)의 일기 90편(2026-04-01 ~ 10-25, 체크리스트 포함)과 일정 7개가 들어 있어 바로 캘린더·과거의 나(1주·1개월·3개월·6개월 전)를 써 볼 수 있다. 데이터는 `src/scripts/demo-data.ts`.
+
+- 이미 있으면 아무것도 바꾸지 않는다. **처음 상태로 되돌리기**(테스트하다 생긴 대화·일정까지 정리): `npm run seed:demo -- --reset`
+- 오늘(KST) 이후 날짜의 일기는 넣지 않는다 — 시연 때 오늘 일기는 직접 쓴다.
+- 끝에서 AI 기억 저장까지 한다. AI 서버가 꺼져 있었다면 켠 뒤 `npm run memory:reindex`. (`AI_MOCK=true`면 가짜 저장이라 과거의 나 대화도 가짜 답)
+- `dist/`의 빌드로 실행하므로 코드를 받은 뒤 한 번은 `npm run build`(또는 `start:dev`가 빌드해 둠).
 
 ## API 문서 (Swagger)
 
@@ -45,6 +55,8 @@ npm run start:dev      # http://localhost:3000
 | `npm run db:deploy` | 마이그레이션 적용 (CI·배포) |
 | `npm run db:studio` | Prisma Studio |
 | `npm run openapi:export` | `openapi.json` 재생성 |
+| `npm run seed:demo` | 시연 계정 만들기 (`-- --reset`이면 처음 상태로 다시) |
+| `npm run memory:reindex` | 확정 일기를 AI 기억에 다시 저장 (`-- --all`이면 전부) |
 
 ## 브랜치
 
