@@ -1,6 +1,9 @@
 import { Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
+import { fromDbDate, toDbDate } from '../common/dates.js';
+import type { PrismaService } from '../prisma/prisma.service.js';
 import { AiClient } from './ai-client.service.js';
+import { mockPastChat } from './mock-past-chat.js';
 import type {
   ClarificationRequest,
   ClarificationResult,
@@ -21,7 +24,11 @@ export class MockAiClient extends AiClient {
   private readonly delayMs: number;
   private readonly mockLogger = new Logger('MockAiClient');
 
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    // 과거의 나 대답에 실제 일기를 읽으려고 DB를 쓴다
+    private readonly prisma: PrismaService,
+  ) {
     super(config);
     this.delayMs = Number(config.get('AI_MOCK_DELAY_MS', 800));
     this.mockLogger.warn('AI_MOCK=true — 가짜 AI 응답을 사용합니다');
@@ -110,49 +117,36 @@ export class MockAiClient extends AiClient {
     return { user_id: userId, diary_id: diaryId, indexed: false };
   }
 
-  // 과거의 나: 질문 낱말에 따라 그때(메이커톤 준비 기간)의 나처럼 답한다
+  // 과거의 나: 기준일까지 실제로 확정한 일기를 읽어서, 질문에 맞는 날의 일기로 그때의 나처럼 답한다
   override async pastChat(req: PastChatRequest): Promise<PastChatResult> {
     await sleep(this.delayMs);
+    const rows = await this.prisma.entry.findMany({
+      where: {
+        userId: req.user_id,
+        status: 'CONFIRMED',
+        excludedFromMemory: false,
+        entryDate: { lte: toDbDate(req.target_date) },
+        finalContent: { not: null },
+      },
+      orderBy: { entryDate: 'desc' },
+      take: 200,
+      select: { id: true, entryDate: true, finalContent: true, note: true },
+    });
+    const { answer, references } = mockPastChat(
+      req.message,
+      req.target_date,
+      rows.map((r) => ({
+        id: r.id,
+        date: fromDbDate(r.entryDate),
+        content: r.finalContent ?? '',
+        note: r.note,
+      })),
+    );
     return {
       user_id: req.user_id,
       target_date: req.target_date,
-      answer: mockPastAnswer(req.message),
-      references: [],
+      answer,
+      references,
     };
   }
-}
-
-const PAST_ANSWERS: { keywords: RegExp; answer: string }[] = [
-  {
-    keywords: /기분|감정|마음|행복|힘들/,
-    answer:
-      '그때는 몸은 좀 피곤했어도 마음은 꽤 들떠 있었어. 하고 싶던 걸 팀원들이랑 같이 만들고 있다는 느낌이 컸거든.',
-  },
-  {
-    keywords: /고민|걱정|불안|어려/,
-    answer:
-      '제일 큰 고민은 정해진 기간 안에 다 끝낼 수 있을까였어. 그래도 회의에서 할 일을 나누고 나니까 하나씩 풀리더라.',
-  },
-  {
-    keywords: /신경|요즘|중요/,
-    answer:
-      '요즘은 메이커톤 준비가 제일 신경 쓰여. 발표 때 우리가 만든 걸 잘 보여 줄 수 있을지 계속 생각하게 돼.',
-  },
-  {
-    keywords: /팀|친구|사람|누구/,
-    answer:
-      '팀원들이랑 거의 매일 모였어. 회의할 때 다들 진지했는데, 끝나고 같이 밥 먹으면서 수다 떠는 시간이 제일 좋았어.',
-  },
-  {
-    keywords: /뭐|무엇|했|일/,
-    answer:
-      '그때 기록을 보면 메이커톤 준비로 바쁘게 지냈어. 회의도 많았고 밤늦게까지 화면을 고치기도 했지만, 그만큼 뿌듯한 날들이었어.',
-  },
-];
-
-function mockPastAnswer(message: string): string {
-  return (
-    PAST_ANSWERS.find((a) => a.keywords.test(message))?.answer ??
-    '그때 남긴 기록으로는 메이커톤 준비에 푹 빠져 있던 시기였어. 정신없었지만 하루하루가 꽤 즐거웠던 것 같아.'
-  );
 }
