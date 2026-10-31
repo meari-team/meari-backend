@@ -68,9 +68,9 @@ describe('LocalPhotoStorage', () => {
       photoKey(USER, '2026-10-24', '33333333-3333-4333-8333-333333333333'),
     ).toString('base64url');
 
-    expect(
-      await storage.resolveSigned(token, exp, `${sig.slice(0, -1)}A`),
-    ).toBeNull();
+    // 마지막 글자를 다른 글자로 (원래 A로 끝나면 바꾸는 게 아니라서 B로)
+    const tampered = `${sig.slice(0, -1)}${sig.endsWith('A') ? 'B' : 'A'}`;
+    expect(await storage.resolveSigned(token, exp, tampered)).toBeNull();
     expect(
       await storage.resolveSigned(token, String(Number(exp) + 600), sig),
     ).toBeNull();
