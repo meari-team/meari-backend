@@ -264,15 +264,29 @@ describe('Generate & Confirm (e2e)', () => {
       expect(res.body.aiIndexStatus).toBe('NONE');
     });
 
-    it('DRAFT는 409, 빈 본문·10000자 초과는 400, 없는 일기는 404', async () => {
+    it('DRAFT(사진·분석 없이)에서도 바로 직접 써서 확정할 수 있다', async () => {
+      await server()
+        .put('/api/v1/entries/2026-03-16')
+        .set('Authorization', bearer())
+        .send({})
+        .expect(201);
+      const res = await post('/api/v1/entries/2026-03-16/confirm', {
+        finalContent: 'AI 없이 쓴 일기',
+      }).expect(200);
+      expect(res.body).toMatchObject({
+        status: 'CONFIRMED',
+        aiDraft: null,
+        finalContent: 'AI 없이 쓴 일기',
+      });
+      expect(ai.generateCalls).toHaveLength(0);
+    });
+
+    it('빈 본문·10000자 초과는 400, 없는 일기는 404', async () => {
       await server()
         .put('/api/v1/entries/2026-03-14')
         .set('Authorization', bearer())
         .send({})
         .expect(201);
-      await post('/api/v1/entries/2026-03-14/confirm', {
-        finalContent: '내용',
-      }).expect(409);
       await post('/api/v1/entries/2026-03-14/confirm', {
         finalContent: '   ',
       }).expect(400);

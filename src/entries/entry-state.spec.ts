@@ -16,7 +16,7 @@ const EXPECTED: Record<EntryAction, EntryStatus[]> = {
   answer: ['QUESTIONING'],
   generate: ['READY', 'GENERATED'],
   skipAndGenerate: ['QUESTIONING', 'READY', 'GENERATED'],
-  confirm: ['READY', 'GENERATED', 'CONFIRMED'],
+  confirm: ['DRAFT', 'QUESTIONING', 'READY', 'GENERATED', 'CONFIRMED'],
 };
 
 describe('entry state machine', () => {
