@@ -86,6 +86,7 @@ export async function toEntryDto(
     finalContent: entry.finalContent,
     summary: entry.summary,
     excludedFromMemory: entry.excludedFromMemory,
+    bookmarked: entry.bookmarkedAt !== null,
     aiIndexStatus: entry.aiIndexStatus,
     confirmedAt: entry.confirmedAt?.toISOString() ?? null,
     updatedAt: entry.updatedAt.toISOString(),

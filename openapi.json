@@ -2098,6 +2098,470 @@
           "chat"
         ]
       }
+    },
+    "/api/v1/entries/{date}/bookmark": {
+      "put": {
+        "description": "확정 일기만. 북마크한 확정·기억 포함 일기가 메아리 후보가 된다. 해제해도 이미 도착한 메아리·대화는 남는다.",
+        "operationId": "EchoController_bookmark",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "2026-10-24",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookmarkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ENTRY_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "INVALID_ENTRY_STATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "DATE_IN_FUTURE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "기억하고 싶은 날 (북마크) 켜기/끄기",
+        "tags": [
+          "echo"
+        ]
+      }
+    },
+    "/api/v1/me/echo-settings": {
+      "get": {
+        "operationId": "EchoController_settings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EchoSettingsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "메아리 설정 — 수신 동의·주기·시간·미리보기·다음 예정",
+        "tags": [
+          "echo"
+        ]
+      },
+      "put": {
+        "description": "동의 중이면 다음 회차를 지금 이후로 다시 계산한다(미동의 기간 회차는 몰아서 보내지 않는다). 미동의면 예약만 지우고 주기 값은 보존한다.",
+        "operationId": "EchoController_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEchoSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EchoSettingsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "메아리 설정 변경 — 보낸 필드만",
+        "tags": [
+          "echo"
+        ]
+      }
+    },
+    "/api/v1/me/push-tokens": {
+      "post": {
+        "operationId": "EchoController_registerToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "기기 푸시 토큰 등록 (Expo push token)",
+        "tags": [
+          "echo"
+        ]
+      },
+      "delete": {
+        "operationId": "EchoController_removeToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovePushTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "기기 푸시 토큰 해제 (로그아웃할 때)",
+        "tags": [
+          "echo"
+        ]
+      }
+    },
+    "/api/v1/echoes": {
+      "get": {
+        "operationId": "EchoController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EchoListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "도착한 메아리 목록 (최근 것부터) + 안 읽은 수",
+        "tags": [
+          "echo"
+        ]
+      }
+    },
+    "/api/v1/echoes/demo": {
+      "post": {
+        "description": "예약을 기다리지 않고 한 회차를 만든다. 동의·후보 조건은 실제 회차와 같다.",
+        "operationId": "EchoController_demo",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EchoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ECHO_DISABLED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "NO_ECHO_CANDIDATES",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "시연: 지금 메아리 한 번 받기 (ECHO_DEMO=true일 때만)",
+        "tags": [
+          "echo"
+        ]
+      }
+    },
+    "/api/v1/echoes/{id}": {
+      "get": {
+        "operationId": "EchoController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EchoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ECHO_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "메아리 상세 — 그날 사진·확정 일기·첫 메시지·대화 가능 여부",
+        "tags": [
+          "echo"
+        ]
+      }
+    },
+    "/api/v1/echoes/{id}/read": {
+      "post": {
+        "operationId": "EchoController_read",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ECHO_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "메아리 읽음 표시",
+        "tags": [
+          "echo"
+        ]
+      }
     }
   },
   "info": {
@@ -2688,6 +3152,10 @@
           "excludedFromMemory": {
             "type": "boolean"
           },
+          "bookmarked": {
+            "type": "boolean",
+            "description": "기억하고 싶은 날 (메아리 후보)"
+          },
           "aiIndexStatus": {
             "allOf": [
               {
@@ -2719,6 +3187,7 @@
           "finalContent",
           "summary",
           "excludedFromMemory",
+          "bookmarked",
           "aiIndexStatus",
           "confirmedAt",
           "updatedAt"
@@ -3123,6 +3592,12 @@
           "lastMessagePreview": {
             "type": "string",
             "nullable": true
+          },
+          "echoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "메아리로 시작된 대화면 그 메아리 id"
           }
         },
         "required": [
@@ -3131,7 +3606,8 @@
           "messageCount",
           "createdAt",
           "lastMessageAt",
-          "lastMessagePreview"
+          "lastMessagePreview",
+          "echoId"
         ]
       },
       "ChatSessionListDto": {
@@ -3275,6 +3751,336 @@
           "assistantMessage"
         ]
       },
+      "BookmarkDto": {
+        "type": "object",
+        "properties": {
+          "bookmarked": {
+            "type": "boolean",
+            "description": "기억하고 싶은 날로 표시"
+          }
+        },
+        "required": [
+          "bookmarked"
+        ]
+      },
+      "EchoFrequency": {
+        "type": "string",
+        "enum": [
+          "WEEKLY",
+          "MONTHLY"
+        ]
+      },
+      "EchoSettingsDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "메아리 알림 받기 (앱 안 수신 동의). 기본 false"
+          },
+          "frequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EchoFrequency"
+              }
+            ]
+          },
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "주 1회: 0=일 … 6=토"
+          },
+          "monthDay": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 31,
+            "description": "월 1회: 그달에 없는 날짜면 마지막 날"
+          },
+          "time": {
+            "type": "string",
+            "example": "21:00",
+            "description": "HH:mm (사용자 시간대)"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Seoul"
+          },
+          "showPreview": {
+            "type": "boolean",
+            "description": "알림에 메시지 내용 미리보기 (기본 false)"
+          },
+          "nextRunAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "다음 수신 예정. 미동의면 null"
+          },
+          "candidateCount": {
+            "type": "number",
+            "description": "메아리 후보 = 북마크한 확정·기억 포함 일기 수"
+          },
+          "pushRegistered": {
+            "type": "boolean",
+            "description": "이 기기·계정에 등록된 푸시 토큰이 있는지"
+          },
+          "demoAvailable": {
+            "type": "boolean",
+            "description": "시연용 즉시 받기를 쓸 수 있는지 (ECHO_DEMO)"
+          }
+        },
+        "required": [
+          "enabled",
+          "frequency",
+          "weekday",
+          "monthDay",
+          "time",
+          "timezone",
+          "showPreview",
+          "nextRunAt",
+          "candidateCount",
+          "pushRegistered",
+          "demoAvailable"
+        ]
+      },
+      "UpdateEchoSettingsDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "frequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EchoFrequency"
+              }
+            ]
+          },
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "monthDay": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 31
+          },
+          "time": {
+            "type": "string",
+            "example": "21:00"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Seoul",
+            "description": "IANA 시간대"
+          },
+          "showPreview": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PushTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "ExponentPushToken[xxxxxxxx]"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "ios",
+              "android"
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "platform"
+        ]
+      },
+      "RemovePushTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "EchoSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entryDate": {
+            "type": "string",
+            "format": "date",
+            "description": "메아리를 보낸 날 (= 대화 기준일)"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "preview": {
+            "type": "string",
+            "description": "첫 메시지 미리보기"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "entryDate",
+          "sessionId",
+          "preview",
+          "readAt",
+          "createdAt"
+        ]
+      },
+      "EchoListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "최근 것부터, 최대 50개",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EchoSummaryDto"
+            }
+          },
+          "unreadCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "unreadCount"
+        ]
+      },
+      "EchoMessageSource": {
+        "type": "string",
+        "enum": [
+          "AI",
+          "FALLBACK"
+        ]
+      },
+      "EchoChatDto": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "description": "이 기준일로 과거의 나와 대화할 수 있는지"
+          },
+          "recordCount": {
+            "type": "number"
+          },
+          "requiredCount": {
+            "type": "number",
+            "example": 7
+          }
+        },
+        "required": [
+          "available",
+          "recordCount",
+          "requiredCount"
+        ]
+      },
+      "EchoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entryDate": {
+            "type": "string",
+            "format": "date",
+            "description": "메아리를 보낸 날 (= 대화 기준일)"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "preview": {
+            "type": "string",
+            "description": "첫 메시지 미리보기"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string",
+            "description": "과거의 나가 먼저 보낸 메시지"
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EchoMessageSource"
+              }
+            ]
+          },
+          "citations": {
+            "description": "메시지 근거 일기",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CitationDto"
+            }
+          },
+          "photos": {
+            "description": "그날 사진 (저장된 원본)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoDto"
+            }
+          },
+          "finalContent": {
+            "type": "string",
+            "nullable": true,
+            "description": "그날 확정 일기"
+          },
+          "entryEdited": {
+            "type": "boolean",
+            "description": "메시지를 만든 뒤 일기가 수정됐는지"
+          },
+          "chat": {
+            "$ref": "#/components/schemas/EchoChatDto"
+          }
+        },
+        "required": [
+          "id",
+          "entryDate",
+          "sessionId",
+          "preview",
+          "readAt",
+          "createdAt",
+          "message",
+          "source",
+          "citations",
+          "photos",
+          "finalContent",
+          "entryEdited",
+          "chat"
+        ]
+      },
       "ErrorCode": {
         "type": "string",
         "enum": [
@@ -3287,6 +4093,7 @@
           "SESSION_NOT_FOUND",
           "CATEGORY_NOT_FOUND",
           "SCHEDULE_NOT_FOUND",
+          "ECHO_NOT_FOUND",
           "EMAIL_TAKEN",
           "WRONG_PASSWORD",
           "SAME_PASSWORD",
@@ -3299,6 +4106,8 @@
           "NOT_ENOUGH_RECORDS",
           "SESSION_MESSAGE_LIMIT",
           "SCHEDULE_LIMIT_EXCEEDED",
+          "ECHO_DISABLED",
+          "NO_ECHO_CANDIDATES",
           "TOO_MANY_REQUESTS",
           "AI_UPSTREAM_ERROR",
           "AI_INDEX_UNAVAILABLE",

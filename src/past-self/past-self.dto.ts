@@ -73,6 +73,14 @@ export class ChatSessionDto {
 
   @ApiProperty({ type: String, nullable: true })
   lastMessagePreview: string | null;
+
+  @ApiProperty({
+    type: String,
+    format: 'uuid',
+    nullable: true,
+    description: '메아리로 시작된 대화면 그 메아리 id',
+  })
+  echoId: string | null;
 }
 
 export class ChatSessionListDto {

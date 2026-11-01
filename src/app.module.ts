@@ -4,6 +4,7 @@ import { AiClientModule } from './ai-client/ai-client.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ChecklistModule } from './checklist/checklist.module.js';
 import { validateEnv } from './config/env.js';
+import { EchoModule } from './echo/echo.module.js';
 import { EntriesModule } from './entries/entries.module.js';
 import { HealthController } from './health/health.controller.js';
 import { MemorySyncModule } from './memory-sync/memory-sync.module.js';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module.js';
     EntriesModule,
     PastSelfModule,
     SchedulesModule,
+    EchoModule,
   ],
   controllers: [HealthController],
 })

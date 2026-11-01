@@ -15,6 +15,8 @@ export default defineConfig({
       // 테스트는 공유 DB를 쓰므로 부팅 시 재색인을 끄고, 재시도는 기다리지 않는다
       MEMORY_SYNC_ON_BOOT: 'false',
       MEMORY_SYNC_RETRY_DELAYS_MS: '0,0,0,0',
+      // 메아리 예약은 테스트가 직접 processDue로 돌린다
+      ECHO_SCHEDULER: 'off',
       // 테스트는 한 IP에서 많이 가입·호출하므로 한도를 넉넉히 (제한 자체는 rate-limit.e2e-spec.ts에서 확인)
       RATE_LIMIT_AUTH_PER_MIN: '100000',
       RATE_LIMIT_AI_PER_DAY: '100000',

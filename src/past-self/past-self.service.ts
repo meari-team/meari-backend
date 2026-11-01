@@ -80,7 +80,10 @@ function toMessageDto(m: ChatMessage): ChatMessageDto {
 }
 
 function toSessionDto(
-  s: ChatSession & { messages: { content: string }[] },
+  s: ChatSession & {
+    messages: { content: string }[];
+    echo?: { id: string } | null;
+  },
 ): ChatSessionDto {
   const last = s.messages[0]?.content ?? null;
   return {
@@ -93,6 +96,7 @@ function toSessionDto(
       last && last.length > PREVIEW_LENGTH
         ? `${last.slice(0, PREVIEW_LENGTH)}…`
         : last,
+    echoId: s.echo?.id ?? null,
   };
 }
 
@@ -194,6 +198,7 @@ export class PastSelfService {
           take: 1,
           select: { content: true },
         },
+        echo: { select: { id: true } },
       },
     });
     return sessions.map(toSessionDto);
