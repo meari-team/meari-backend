@@ -67,6 +67,7 @@ export type PastChatRequest = {
   target_date: string;
   message: string;
   top_k?: number;
+  history?: { role: 'user' | 'assistant'; content: string }[];
 };
 
 export type PastChatReference = {
