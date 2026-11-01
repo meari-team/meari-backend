@@ -187,6 +187,9 @@ export class EntryDto {
   @ApiProperty()
   excludedFromMemory: boolean;
 
+  @ApiProperty({ description: '기억하고 싶은 날 (메아리 후보)' })
+  bookmarked: boolean;
+
   @ApiProperty({ enum: AiIndexStatus, enumName: 'AiIndexStatus' })
   aiIndexStatus: AiIndexStatus;
 

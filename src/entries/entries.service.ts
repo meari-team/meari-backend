@@ -168,7 +168,14 @@ export class EntriesService {
       if (entry.status === 'CONFIRMED' || entry.aiIndexStatus !== 'NONE') {
         await this.ai.deleteDiaryIndex(userId, found.id);
       }
-      await this.prisma.entry.delete({ where: { id: found.id } });
+      // 이 일기에서 온 메아리 대화방도 함께 지운다 (첫 메시지에 일기 내용이 들어 있다).
+      // 메아리 자체는 일기를 따라 지워진다 (onDelete: Cascade)
+      await this.prisma.$transaction([
+        this.prisma.chatSession.deleteMany({
+          where: { userId, echo: { is: { entryId: found.id } } },
+        }),
+        this.prisma.entry.delete({ where: { id: found.id } }),
+      ]);
       return entry.photos.map((p) => p.storageKey);
     });
     await this.storage.remove(keys);
