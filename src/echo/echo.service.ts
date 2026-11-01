@@ -322,8 +322,10 @@ export class EchoService {
     });
     let created = 0;
     for (const s of due) {
+      // 아직 이 회차가 지나지 않은 행만 잡는다. 다른 실행이 먼저 잡았으면 nextRunAt이 미래라 0건
+      // (같은 값 비교는 DB의 마이크로초와 JS의 밀리초가 달라 놓칠 수 있다)
       const claimed = await this.prisma.echoSetting.updateMany({
-        where: { userId: s.userId, enabled: true, nextRunAt: s.nextRunAt },
+        where: { userId: s.userId, enabled: true, nextRunAt: { lte: now } },
         data: { nextRunAt: nextEchoRun(s, now) },
       });
       if (claimed.count !== 1 || !s.nextRunAt) continue;

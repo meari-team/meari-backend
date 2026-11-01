@@ -296,6 +296,13 @@ describe('Echo (e2e)', () => {
       expect(s.nextRunAt!.getTime()).toBeGreaterThan(Date.now());
     });
 
+    it('DB가 마이크로초까지 저장한 회차 시각도 놓치지 않는다', async () => {
+      await bookmark(mine[8].date);
+      await enable();
+      await prisma.$executeRaw`update echo_settings set next_run_at = now() - interval '1 minute 0.123456 second' where user_id = ${me.userId}::uuid`;
+      expect(await echo.processDue(new Date())).toBe(1);
+    });
+
     it('같은 회차를 다시 실행해도 메아리·대화·알림이 하나뿐', async () => {
       await bookmark(mine[8].date);
       await enable();
