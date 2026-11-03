@@ -213,6 +213,7 @@ describe('Past self (e2e)', () => {
           target_date: t,
           message: '요즘 뭐 해?',
           top_k: 8,
+          history: [],
         },
       ]);
       expect(res.body.userMessage).toMatchObject({
@@ -229,6 +230,26 @@ describe('Past self (e2e)', () => {
           { entryId: ok2.id, date: ok2.date },
         ],
       });
+    });
+
+    it('같은 세션의 이전 대화를 시간순으로 전달한다', async () => {
+      const id = await newSession(shift(today, -3));
+      const first = await as(me)
+        .post(`/api/v1/chat/sessions/${id}/messages`, {
+          content: '면접 준비는 어땠어?',
+        })
+        .expect(201);
+      await as(me)
+        .post(`/api/v1/chat/sessions/${id}/messages`, {
+          content: '아 맞아 그때 힘들었지',
+        })
+        .expect(201);
+      expect(ai.requests[0].history).toEqual([]);
+      expect(ai.requests[1].history).toEqual([
+        { role: 'user', content: '면접 준비는 어땠어?' },
+        { role: 'assistant', content: first.body.assistantMessage.content },
+      ]);
+      expect(ai.requests[1].message).toBe('아 맞아 그때 힘들었지');
     });
 
     it('남는 근거가 없으면 NO_EVIDENCE', async () => {

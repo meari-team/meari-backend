@@ -2,7 +2,10 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { ChatMessage, ChatSession } from '@prisma/client';
 import { AiClient } from '../ai-client/ai-client.service.js';
-import type { PastChatReference } from '../ai-client/ai-client.types.js';
+import type {
+  PastChatReference,
+  PastChatRequest,
+} from '../ai-client/ai-client.types.js';
 import { fromDbDate, toDbDate } from '../common/dates.js';
 import { AppException } from '../common/errors/app.exception.js';
 import { todayKst } from '../common/pipes/parse-date.pipe.js';
@@ -63,6 +66,23 @@ export function filterCitations(
     out.push({ entryId: ref.diary_id, date });
   }
   return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// rows는 최신순. 최근 10개·총 20,000자까지 온전한 메시지만 전달한다.
+export function buildChatHistory(
+  rows: { role: 'USER' | 'ASSISTANT'; content: string }[],
+): NonNullable<PastChatRequest['history']> {
+  const selected: NonNullable<PastChatRequest['history']> = [];
+  let size = 0;
+  for (const row of rows.slice(0, 10)) {
+    if (size + row.content.length > 20000) break;
+    selected.push({
+      role: row.role === 'USER' ? 'user' : 'assistant',
+      content: row.content,
+    });
+    size += row.content.length;
+  }
+  return selected.reverse();
 }
 
 function toMessageDto(m: ChatMessage): ChatMessageDto {
@@ -270,12 +290,20 @@ export class PastSelfService {
     }
 
     const anchorDate = fromDbDate(session.anchorDate);
+    // findSession에서 소유권을 확인한 세션만 조회한다. 현재 질문은 아직 저장 전이다.
+    const previous = await this.prisma.chatMessage.findMany({
+      where: { sessionId },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: 10,
+      select: { role: true, content: true },
+    });
     const started = Date.now();
     const result = await this.ai.pastChat({
       user_id: userId,
       target_date: anchorDate,
       message: content,
       top_k: this.topK,
+      history: buildChatHistory(previous),
     });
     const latencyMs = Date.now() - started;
 

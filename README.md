@@ -61,3 +61,9 @@ npm run start:dev      # http://localhost:3000
 ## 브랜치
 
 `develop`(기본) ← `feat/MEA-N-*` PR (squash) · `main` ← `develop` 릴리스 PR (merge commit). 자세한 규칙은 meari-docs의 `dev-flow.md` §4.
+
+## 과거 대화 맥락 전달
+
+`PastSelfService`는 소유권을 확인한 세션의 최근 메시지 최대 10개를 조회해 AI 서버에 `history`로 전달합니다. 총 20,000자 이내에서 오래된 메시지를 제외하며 현재 질문은 별도 `message`로 보냅니다. 사용자와 AI 역할을 보존하고, 대화는 과거 개인 사실을 입증하는 일기 근거와 구분합니다.
+
+먼저 `history`를 지원하는 meari-ai 변경을 반영한 뒤 이 백엔드를 배포해야 합니다. 기존 AI 서버는 미정의 필드를 거부하므로 백엔드를 먼저 배포하면 422가 발생할 수 있습니다. 앱의 공개 요청·응답 계약과 DB 스키마는 변경하지 않습니다.
