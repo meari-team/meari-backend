@@ -64,6 +64,26 @@ describe('buildChatHistory', () => {
     expect(buildChatHistory(rows)).toHaveLength(4);
     expect(buildChatHistory([])).toEqual([]);
   });
+  it('AI 서버 한도(5,000자)를 넘는 메시지·빈 메시지는 빼고 나머지는 보낸다', () => {
+    const result = buildChatHistory([
+      { role: 'USER', content: '그때 기억나?' },
+      { role: 'ASSISTANT', content: '가'.repeat(5001) },
+      { role: 'USER', content: '   ' },
+      { role: 'ASSISTANT', content: ' 응, 기억나. ' },
+    ]);
+    expect(result).toEqual([
+      { role: 'assistant', content: '응, 기억나.' },
+      { role: 'user', content: '그때 기억나?' },
+    ]);
+  });
+  it('차단·위기 대응 답은 맥락으로 넘기지 않는다', () => {
+    const result = buildChatHistory([
+      { role: 'ASSISTANT', content: '차단된 답', flag: 'LEAK_BLOCKED' },
+      { role: 'ASSISTANT', content: '위기 안내', flag: 'CRISIS' },
+      { role: 'ASSISTANT', content: '근거 없는 답', flag: 'NO_EVIDENCE' },
+    ]);
+    expect(result).toEqual([{ role: 'assistant', content: '근거 없는 답' }]);
+  });
 });
 
 describe('PastSelfService history 전달', () => {
@@ -102,7 +122,7 @@ describe('PastSelfService history 전달', () => {
       where: { sessionId: 'session' },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: 10,
-      select: { role: true, content: true },
+      select: { role: true, content: true, flag: true },
     });
     expect(ai.pastChat).toHaveBeenCalledWith(
       expect.objectContaining({

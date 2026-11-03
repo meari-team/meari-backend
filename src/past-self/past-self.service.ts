@@ -68,19 +68,30 @@ export function filterCitations(
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }
 
+// AI 서버 history 계약 (meari-ai app/schemas/past_chat.py와 맞춘다)
+export const HISTORY_MAX_MESSAGES = 10;
+export const HISTORY_MAX_CHARS = 20_000;
+const HISTORY_MESSAGE_MAX_CHARS = 5_000;
+// 차단·위기 대응 답은 대화 맥락으로도 다시 넘기지 않는다
+const HISTORY_SKIP_FLAGS = new Set(['LEAK_BLOCKED', 'CRISIS']);
+
 // rows는 최신순. 최근 10개·총 20,000자까지 온전한 메시지만 전달한다.
+// 하나라도 AI 서버 한도(5,000자)를 넘으면 요청 전체가 거부되므로 그런 메시지는 뺀다
 export function buildChatHistory(
-  rows: { role: 'USER' | 'ASSISTANT'; content: string }[],
+  rows: { role: 'USER' | 'ASSISTANT'; content: string; flag?: string }[],
 ): NonNullable<PastChatRequest['history']> {
   const selected: NonNullable<PastChatRequest['history']> = [];
   let size = 0;
-  for (const row of rows.slice(0, 10)) {
-    if (size + row.content.length > 20000) break;
+  for (const row of rows.slice(0, HISTORY_MAX_MESSAGES)) {
+    if (row.flag && HISTORY_SKIP_FLAGS.has(row.flag)) continue;
+    const content = row.content.trim();
+    if (!content || content.length > HISTORY_MESSAGE_MAX_CHARS) continue;
+    if (size + content.length > HISTORY_MAX_CHARS) break;
     selected.push({
       role: row.role === 'USER' ? 'user' : 'assistant',
-      content: row.content,
+      content,
     });
-    size += row.content.length;
+    size += content.length;
   }
   return selected.reverse();
 }
@@ -294,16 +305,18 @@ export class PastSelfService {
     const previous = await this.prisma.chatMessage.findMany({
       where: { sessionId },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      take: 10,
-      select: { role: true, content: true },
+      take: HISTORY_MAX_MESSAGES,
+      select: { role: true, content: true, flag: true },
     });
+    const history = buildChatHistory(previous);
     const started = Date.now();
     const result = await this.ai.pastChat({
       user_id: userId,
       target_date: anchorDate,
       message: content,
       top_k: this.topK,
-      history: buildChatHistory(previous),
+      // 비었으면 보내지 않는다 (history를 모르는 이전 AI 서버도 첫 질문은 받도록)
+      ...(history.length > 0 ? { history } : {}),
     });
     const latencyMs = Date.now() - started;
 

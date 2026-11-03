@@ -213,7 +213,6 @@ describe('Past self (e2e)', () => {
           target_date: t,
           message: '요즘 뭐 해?',
           top_k: 8,
-          history: [],
         },
       ]);
       expect(res.body.userMessage).toMatchObject({
@@ -244,7 +243,8 @@ describe('Past self (e2e)', () => {
           content: '아 맞아 그때 힘들었지',
         })
         .expect(201);
-      expect(ai.requests[0].history).toEqual([]);
+      // 첫 질문은 이전 대화가 없어 history를 보내지 않는다
+      expect(ai.requests[0].history).toBeUndefined();
       expect(ai.requests[1].history).toEqual([
         { role: 'user', content: '면접 준비는 어땠어?' },
         { role: 'assistant', content: first.body.assistantMessage.content },
