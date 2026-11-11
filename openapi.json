@@ -2566,7 +2566,7 @@
   },
   "info": {
     "title": "메아리 API",
-    "description": "앱 ↔ NestJS API. 설계 문서: meari-docs/api.md",
+    "description": "앱 ↔ NestJS API. 설계 문서: meari-docs/tech/api.md",
     "version": "0.1.0",
     "contact": {}
   },
